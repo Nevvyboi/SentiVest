@@ -170,8 +170,6 @@ sentivest/
 ├── static/
 │   ├── index.html        # Main dashboard
 │   └── testing.html      # Testing dashboard
-├── docs/
-│   └── images/           # Screenshots (add your images here)
 └── README.md             # This file
 ```
 
