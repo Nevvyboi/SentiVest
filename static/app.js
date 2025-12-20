@@ -1,5 +1,3 @@
-// ==================== FINANCIAL ALARM SYSTEM - CYBERPUNK EDITION ====================
-
 // Global State
 const state = {
     ws: null,
@@ -8,8 +6,6 @@ const state = {
     dashboardData: null,
     isInitialized: false
 };
-
-// ==================== INITIALIZATION ====================
 
 async function initializeSystem() {
     if (state.isInitialized) {
@@ -35,8 +31,6 @@ async function initializeSystem() {
         showToast('Failed to initialize system', 'error');
     }
 }
-
-// ==================== WEBSOCKET ====================
 
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -71,8 +65,6 @@ function handleWebSocketMessage(message) {
         loadDashboard(); // Refresh dashboard
     }
 }
-
-// ==================== API CALLS ====================
 
 async function loadDashboard() {
     try {
@@ -171,8 +163,6 @@ async function toggleRule(ruleId, enabled) {
         showToast('Failed to update rule', 'error');
     }
 }
-
-// ==================== UI UPDATES ====================
 
 function updateBalance(data) {
     const balanceEl = document.getElementById('balance');
@@ -434,8 +424,6 @@ function updateRules(rules) {
     }).join('');
 }
 
-// ==================== ALERT ACTIONS ====================
-
 function showAlertDetail(alertId) {
     const alert = state.dashboardData.alerts.find(a => a.id === alertId);
     if (!alert) return;
@@ -509,8 +497,6 @@ function showAlerts() {
     document.getElementById('alertsPanel').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ==================== NOTIFICATIONS ====================
-
 function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -535,8 +521,6 @@ function playAlertSound() {
     const audio = document.getElementById('alertSound');
     audio.play().catch(e => console.log('Audio play failed:', e));
 }
-
-// ==================== PARTICLE EFFECTS ====================
 
 function initParticles() {
     const canvas = document.getElementById('particles');
@@ -614,8 +598,6 @@ function initParticles() {
         canvas.height = window.innerHeight;
     });
 }
-
-// ==================== UTILITY FUNCTIONS ====================
 
 function animateValue(element, start, end, duration, formatter) {
     const startTime = performance.now();
@@ -713,8 +695,6 @@ function generateNeonColors(count) {
     return { backgrounds, borders };
 }
 
-// ==================== EVENT LISTENERS ====================
-
 document.addEventListener('DOMContentLoaded', () => {
     initializeSystem();
     
@@ -734,8 +714,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300000); // 5 minutes
 });
 
-// ==================== EXPORTS ====================
-
 window.loadDashboard = loadDashboard;
 window.syncData = syncData;
 window.showAlerts = showAlerts;
@@ -744,4 +722,5 @@ window.showAlertDetail = showAlertDetail;
 window.closeModal = closeModal;
 window.dismissAlert = dismissAlert;
 window.markAsRead = markAsRead;
+
 window.toggleRule = toggleRule;
