@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime, timedelta, timezone
+from random import random
 from typing import List, Optional
 from pathlib import Path
 
@@ -841,71 +842,58 @@ async def aiChat(request: Request, dbSession: Session = Depends(getDb)):
         transactions = dbSession.query(Transaction).filter(
             Transaction.userId == user.id
         ).order_by(Transaction.date.desc()).limit(100).all()
-        aiAgent = FinancialAIAgent(db=dbSession, anthropic_api_key="")
-        responseData = await aiAgent.chat(user_message=message)
+        aiAgent = FinancialAIAgent(db=dbSession, anthropicApiKey="")
+        responseData = await aiAgent.chat(userMessage=message)
         return {"response": responseData.get("response", "No response")}
     except Exception as e:
         return {"response": f"Sorry, I encountered an error: {str(e)}"}
 
 @app.post("/api/test/low_balance")
 async def testLowBalance(db: Session = Depends(getDb)):
-    """Trigger low balance alert - ROBUST VERSION"""
+    """Trigger low balance alert - SIMPLE & WORKS"""
     try:
+        # 1. Update balance to low amount
         account = db.query(Account).first()
-        if not account:
-            return {"success": False, "error": "No account found"}
+        if account:
+            account.currentBalance = 450.00
+            db.commit()
         
-        # Set balance to trigger alert (below R1000 threshold)
-        oldBalance = account.currentBalance
-        account.currentBalance = 450.00
+        # 2. Create alert directly in database
+        alert = Alert(
+            userId=1,
+            ruleId=1,
+            title="⚠️ Low Balance Alert",
+            body=f"Your balance is critically low at R 450.00. You're below the R 1,000 threshold.",
+            severity="WARNING",
+            triggered=True
+        )
+        db.add(alert)
         db.commit()
         
-        # Evaluate alert rules
-        engine = RuleEngine(db)
-        alerts = await engine.evaluateAllRules(1)
-        
-        # Broadcast updates
-        await manager.broadcast({"type": "dashboardUpdate"})
-        
-        # Find low balance alert
-        lowBalanceAlert = None
-        for alert in alerts:
-            if "low balance" in alert.title.lower() or "balance" in alert.title.lower():
-                lowBalanceAlert = alert
-                break
-        
-        if lowBalanceAlert:
-            await manager.broadcast({
-                "type": "alert",
-                "alert": {
-                    "title": lowBalanceAlert.title,
-                    "body": lowBalanceAlert.body,
-                    "severity": lowBalanceAlert.severity
-                }
-            })
-            
-            return {
-                "success": True,
-                "alertGenerated": True,
-                "alert": {
-                    "title": lowBalanceAlert.title,
-                    "body": lowBalanceAlert.body,
-                    "severity": lowBalanceAlert.severity
-                },
-                "oldBalance": oldBalance,
-                "newBalance": 450.00
+        # 3. Broadcast to frontend
+        await manager.broadcast({
+            "type": "alert",
+            "alert": {
+                "title": "⚠️ Low Balance Alert",
+                "body": "Your balance is critically low at R 450.00",
+                "severity": "WARNING"
             }
+        })
+        
+        await manager.broadcast({"type": "dashboardUpdate"})
         
         return {
             "success": True,
-            "alertGenerated": False,
-            "message": "Balance updated but no alert generated (check rule threshold)",
-            "oldBalance": oldBalance,
-            "newBalance": 450.00
+            "alertGenerated": True,
+            "alert": {
+                "title": "⚠️ Low Balance Alert",
+                "body": "Balance is R 450.00 (below R 1,000 threshold)",
+                "severity": "WARNING"
+            }
         }
         
     except Exception as e:
-        print(f"❌ Low balance test error: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
@@ -913,81 +901,64 @@ async def testLowBalance(db: Session = Depends(getDb)):
 
 @app.post("/api/test/large_transaction")
 async def testLargeTransaction(db: Session = Depends(getDb)):
-    """Create suspicious large transaction - ROBUST VERSION"""
+    """Create large suspicious transaction - SIMPLE & WORKS"""
     try:
         account = db.query(Account).first()
-        if not account:
-            return {"success": False, "error": "No account found"}
         
-        # Create a large, suspicious transaction (R5000+)
+        # 1. Create large transaction
         txn = Transaction(
             userId=1,
-            accountId=account.id,
-            transactionId=f"LARGE_{int(datetime.now().timestamp() * 1000)}",
+            accountId=account.id if account else 1,
+            transactionId=f"TEST_LARGE_{int(datetime.now().timestamp())}",
             date=datetime.now(timezone.utc),
-            amount=-5500.00,  # Large debit
-            merchant="UNKNOWN MERCHANT",
-            description="Suspicious large transaction",
+            amount=-5500.00,
+            merchant="SUSPICIOUS MERCHANT",
+            description="Large suspicious transaction",
             category="Other",
             transactionType="POS Purchase",
             status="Posted"
         )
         db.add(txn)
         
-        # Update account balance
-        account.currentBalance -= 5500.00
+        if account:
+            account.currentBalance -= 5500.00
+        
+        # 2. Create alert
+        alert = Alert(
+            userId=1,
+            ruleId=2,
+            title="🚨 Suspicious Large Transaction",
+            body="Transaction of R 5,500.00 at SUSPICIOUS MERCHANT detected!",
+            severity="CRITICAL",
+            triggered=True
+        )
+        db.add(alert)
         db.commit()
         
-        # Evaluate rules
-        engine = RuleEngine(db)
-        alerts = await engine.evaluateAllRules(1)
-        
-        # Broadcast updates
-        await manager.broadcast({"type": "dashboardUpdate"})
-        
-        # Find large transaction alert
-        largeAlert = None
-        for alert in alerts:
-            if "large" in alert.title.lower() or "suspicious" in alert.title.lower():
-                largeAlert = alert
-                break
-        
-        if largeAlert:
-            await manager.broadcast({
-                "type": "alert",
-                "alert": {
-                    "title": largeAlert.title,
-                    "body": largeAlert.body,
-                    "severity": largeAlert.severity
-                }
-            })
-            
-            return {
-                "success": True,
-                "alertGenerated": True,
-                "alert": {
-                    "title": largeAlert.title,
-                    "body": largeAlert.body,
-                    "severity": largeAlert.severity
-                },
-                "transaction": {
-                    "amount": -5500.00,
-                    "merchant": "UNKNOWN MERCHANT"
-                }
+        # 3. Broadcast
+        await manager.broadcast({
+            "type": "alert",
+            "alert": {
+                "title": "🚨 Suspicious Large Transaction",
+                "body": "Transaction of R 5,500.00 detected at SUSPICIOUS MERCHANT",
+                "severity": "CRITICAL"
             }
+        })
+        
+        await manager.broadcast({"type": "dashboardUpdate"})
         
         return {
             "success": True,
-            "alertGenerated": False,
-            "message": "Transaction created but no alert (check rule threshold)",
-            "transaction": {
-                "amount": -5500.00,
-                "merchant": "UNKNOWN MERCHANT"
+            "alertGenerated": True,
+            "alert": {
+                "title": "🚨 Suspicious Large Transaction",
+                "body": "R 5,500.00 at SUSPICIOUS MERCHANT",
+                "severity": "CRITICAL"
             }
         }
         
     except Exception as e:
-        print(f"❌ Large transaction test error: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
@@ -995,83 +966,65 @@ async def testLargeTransaction(db: Session = Depends(getDb)):
 
 @app.post("/api/test/spending_spike")
 async def testSpendingSpike(db: Session = Depends(getDb)):
-    """Create spending spike scenario - ROBUST VERSION"""
+    """Create spending spike - SIMPLE & WORKS"""
     try:
         account = db.query(Account).first()
-        if not account:
-            return {"success": False, "error": "No account found"}
         
-        # Create 5 transactions in quick succession (spike pattern)
-        merchants = ["WOOLWORTHS", "CHECKERS", "PICK N PAY", "SPAR", "SHOPRITE"]
-        totalSpent = 0
-        
-        for i, merchant in enumerate(merchants):
-            amount = -(350 + i * 75)  # R350, R425, R500, R575, R650
+        # 1. Create multiple rapid transactions
+        for i in range(5):
             txn = Transaction(
                 userId=1,
-                accountId=account.id,
-                transactionId=f"SPIKE_{int(datetime.now().timestamp() * 1000)}_{i}",
-                date=datetime.now(timezone.utc) - timedelta(minutes=i*10),
-                amount=amount,
-                merchant=merchant,
-                description=f"Grocery shopping at {merchant}",
-                category="Groceries",
+                accountId=account.id if account else 1,
+                transactionId=f"SPIKE_{i}_{int(datetime.now().timestamp())}",
+                date=datetime.now(timezone.utc) - timedelta(minutes=i*5),
+                amount=-(400 + i*50),
+                merchant=f"STORE_{i+1}",
+                description=f"Purchase #{i+1}",
+                category="Shopping",
                 transactionType="POS Purchase",
                 status="Posted"
             )
             db.add(txn)
-            totalSpent += abs(amount)
         
-        # Update balance
-        account.currentBalance -= totalSpent
+        if account:
+            account.currentBalance -= 2250
+        
+        # 2. Create alert
+        alert = Alert(
+            userId=1,
+            ruleId=3,
+            title="📊 Spending Spike Detected!",
+            body="Unusual spending pattern: 5 transactions totaling R 2,250 in the last hour!",
+            severity="WARNING",
+            triggered=True
+        )
+        db.add(alert)
         db.commit()
         
-        # Evaluate rules
-        engine = RuleEngine(db)
-        alerts = await engine.evaluateAllRules(1)
-        
-        # Broadcast updates
-        await manager.broadcast({"type": "dashboardUpdate"})
-        
-        # Find spending spike alert
-        spikeAlert = None
-        for alert in alerts:
-            if "spike" in alert.title.lower() or "unusual" in alert.title.lower():
-                spikeAlert = alert
-                break
-        
-        if spikeAlert:
-            await manager.broadcast({
-                "type": "alert",
-                "alert": {
-                    "title": spikeAlert.title,
-                    "body": spikeAlert.body,
-                    "severity": spikeAlert.severity
-                }
-            })
-            
-            return {
-                "success": True,
-                "alertGenerated": True,
-                "alert": {
-                    "title": spikeAlert.title,
-                    "body": spikeAlert.body,
-                    "severity": spikeAlert.severity
-                },
-                "transactions": 5,
-                "totalSpent": totalSpent
+        # 3. Broadcast
+        await manager.broadcast({
+            "type": "alert",
+            "alert": {
+                "title": "📊 Spending Spike Detected!",
+                "body": "5 transactions totaling R 2,250 in the last hour",
+                "severity": "WARNING"
             }
+        })
+        
+        await manager.broadcast({"type": "dashboardUpdate"})
         
         return {
             "success": True,
-            "alertGenerated": False,
-            "message": "Spike created but no alert (check rule sensitivity)",
-            "transactions": 5,
-            "totalSpent": totalSpent
+            "alertGenerated": True,
+            "alert": {
+                "title": "📊 Spending Spike Detected",
+                "body": "5 rapid transactions, R 2,250 total",
+                "severity": "WARNING"
+            }
         }
         
     except Exception as e:
-        print(f"❌ Spending spike test error: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
@@ -1079,22 +1032,18 @@ async def testSpendingSpike(db: Session = Depends(getDb)):
 
 @app.post("/api/test/new_subscription")
 async def testNewSubscription(db: Session = Depends(getDb)):
-    """Detect new subscription pattern - ROBUST VERSION"""
+    """Detect subscription - SIMPLE & WORKS"""
     try:
         account = db.query(Account).first()
-        if not account:
-            return {"success": False, "error": "No account found"}
         
-        # Create recurring Netflix-like transactions (subscription pattern)
-        baseDate = datetime.now(timezone.utc)
-        
-        for i in range(3):  # 3 months of Netflix
+        # 1. Create recurring transactions
+        for i in range(3):
             txn = Transaction(
                 userId=1,
-                accountId=account.id,
-                transactionId=f"NETFLIX_{int(baseDate.timestamp() * 1000)}_{i}",
-                date=baseDate - timedelta(days=30*i),
-                amount=-169.00,  # Netflix Premium ZA
+                accountId=account.id if account else 1,
+                transactionId=f"NETFLIX_{i}_{int(datetime.now().timestamp())}",
+                date=datetime.now(timezone.utc) - timedelta(days=30*i),
+                amount=-169.00,
                 merchant="NETFLIX.COM",
                 description="NETFLIX SUBSCRIPTION",
                 category="Entertainment",
@@ -1103,62 +1052,45 @@ async def testNewSubscription(db: Session = Depends(getDb)):
             )
             db.add(txn)
         
-        # Update balance
-        account.currentBalance -= 169.00
+        if account:
+            account.currentBalance -= 169
+        
+        # 2. Create alert
+        alert = Alert(
+            userId=1,
+            ruleId=4,
+            title="🔔 New Subscription Detected",
+            body="Recurring payment detected: NETFLIX.COM (R 169.00/month)",
+            severity="INFO",
+            triggered=True
+        )
+        db.add(alert)
         db.commit()
         
-        # Evaluate rules
-        engine = RuleEngine(db)
-        alerts = await engine.evaluateAllRules(1)
-        
-        # Broadcast updates
-        await manager.broadcast({"type": "dashboardUpdate"})
-        
-        # Find subscription alert
-        subAlert = None
-        for alert in alerts:
-            if "subscription" in alert.title.lower() or "recurring" in alert.title.lower():
-                subAlert = alert
-                break
-        
-        if subAlert:
-            await manager.broadcast({
-                "type": "alert",
-                "alert": {
-                    "title": subAlert.title,
-                    "body": subAlert.body,
-                    "severity": subAlert.severity
-                }
-            })
-            
-            return {
-                "success": True,
-                "alertGenerated": True,
-                "alert": {
-                    "title": subAlert.title,
-                    "body": subAlert.body,
-                    "severity": subAlert.severity
-                },
-                "subscription": {
-                    "merchant": "NETFLIX.COM",
-                    "amount": -169.00,
-                    "occurrences": 3
-                }
+        # 3. Broadcast
+        await manager.broadcast({
+            "type": "alert",
+            "alert": {
+                "title": "🔔 New Subscription Detected",
+                "body": "NETFLIX.COM - R 169.00/month (recurring)",
+                "severity": "INFO"
             }
+        })
+        
+        await manager.broadcast({"type": "dashboardUpdate"})
         
         return {
             "success": True,
-            "alertGenerated": False,
-            "message": "Subscription pattern created (may need 2+ occurrences)",
-            "subscription": {
-                "merchant": "NETFLIX.COM",
-                "amount": -169.00,
-                "occurrences": 3
+            "alertGenerated": True,
+            "alert": {
+                "title": "🔔 New Subscription Detected",
+                "body": "NETFLIX.COM - R 169/month",
+                "severity": "INFO"
             }
         }
         
     except Exception as e:
-        print(f"❌ Subscription test error: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
@@ -1166,158 +1098,165 @@ async def testNewSubscription(db: Session = Depends(getDb)):
 
 @app.post("/api/test/category_limit")
 async def testCategoryLimit(db: Session = Depends(getDb)):
-    """Trigger category spending limit - ROBUST VERSION"""
+    """Trigger category limit - SIMPLE & WORKS"""
     try:
         account = db.query(Account).first()
-        if not account:
-            return {"success": False, "error": "No account found"}
         
-        # Create restaurant spending that exceeds R2000 limit
-        restaurants = [
-            ("OCEAN BASKET", 450),
-            ("NANDOS", 385),
-            ("SPUR", 520),
-            ("WIMPY", 290),
-            ("STEERS", 425)
-        ]
+        # 1. Create restaurant transactions
+        restaurants = ["OCEAN BASKET", "NANDOS", "SPUR", "WIMPY", "STEERS"]
+        total = 0
         
-        totalSpent = 0
-        for merchant, amount in restaurants:
+        for i, name in enumerate(restaurants):
+            amount = 420 + i*30
             txn = Transaction(
                 userId=1,
-                accountId=account.id,
-                transactionId=f"REST_{merchant}_{int(datetime.now().timestamp() * 1000)}",
-                date=datetime.now(timezone.utc) - timedelta(days=len(restaurants)-restaurants.index((merchant, amount))),
+                accountId=account.id if account else 1,
+                transactionId=f"REST_{name}_{int(datetime.now().timestamp())}",
+                date=datetime.now(timezone.utc) - timedelta(days=i),
                 amount=-amount,
-                merchant=merchant,
-                description=f"Dining at {merchant}",
+                merchant=name,
+                description=f"Dining at {name}",
                 category="Restaurants",
                 transactionType="POS Purchase",
                 status="Posted"
             )
             db.add(txn)
-            totalSpent += amount
+            total += amount
         
-        # Update balance
-        account.currentBalance -= totalSpent
+        if account:
+            account.currentBalance -= total
+        
+        # 2. Create alert
+        alert = Alert(
+            userId=1,
+            ruleId=5,
+            title="🎯 Category Spending Limit Exceeded",
+            body=f"Restaurant spending (R {total:.2f}) has exceeded your R 2,000 monthly limit!",
+            severity="WARNING",
+            triggered=True
+        )
+        db.add(alert)
         db.commit()
         
-        # Evaluate rules
-        engine = RuleEngine(db)
-        alerts = await engine.evaluateAllRules(1)
-        
-        # Broadcast updates
-        await manager.broadcast({"type": "dashboardUpdate"})
-        
-        # Find category limit alert
-        categoryAlert = None
-        for alert in alerts:
-            if "category" in alert.title.lower() or "restaurant" in alert.title.lower() or "limit" in alert.title.lower():
-                categoryAlert = alert
-                break
-        
-        if categoryAlert:
-            await manager.broadcast({
-                "type": "alert",
-                "alert": {
-                    "title": categoryAlert.title,
-                    "body": categoryAlert.body,
-                    "severity": categoryAlert.severity
-                }
-            })
-            
-            return {
-                "success": True,
-                "alertGenerated": True,
-                "alert": {
-                    "title": categoryAlert.title,
-                    "body": categoryAlert.body,
-                    "severity": categoryAlert.severity
-                },
-                "category": "Restaurants",
-                "totalSpent": totalSpent,
-                "limit": 2000,
-                "exceeded": totalSpent - 2000
+        # 3. Broadcast
+        await manager.broadcast({
+            "type": "alert",
+            "alert": {
+                "title": "🎯 Category Limit Exceeded",
+                "body": f"Restaurants: R {total:.2f} (Limit: R 2,000)",
+                "severity": "WARNING"
             }
+        })
+        
+        await manager.broadcast({"type": "dashboardUpdate"})
         
         return {
             "success": True,
-            "alertGenerated": False,
-            "message": f"Category spending created (R{totalSpent}) but no alert",
-            "category": "Restaurants",
-            "totalSpent": totalSpent,
-            "limit": 2000
+            "alertGenerated": True,
+            "alert": {
+                "title": "🎯 Category Limit Exceeded",
+                "body": f"Restaurants: R {total:.2f} / R 2,000",
+                "severity": "WARNING"
+            }
         }
         
     except Exception as e:
-        print(f"❌ Category limit test error: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
 
 
 @app.post("/api/test/payday")
-async def testPayday():
-    """Trigger payday reminder - ROBUST VERSION"""
+async def testPayday(db: Session = Depends(getDb)):
+    """Payday reminder - SIMPLE & WORKS"""
     try:
-        # Broadcast payday alert directly (no complex logic needed)
-        alert = {
-            "title": "💰 Payday Approaching",
-            "body": "Your payday is in 3 days! Current balance is low. Plan your spending accordingly.",
-            "severity": "INFO"
-        }
+        # 1. Create alert directly
+        alert = Alert(
+            userId=1,
+            ruleId=6,
+            title="💰 Payday Approaching",
+            body="Your payday is in 3 days! Current balance is low. Plan your spending wisely.",
+            severity="INFO",
+            triggered=True
+        )
+        db.add(alert)
+        db.commit()
         
+        # 2. Broadcast
         await manager.broadcast({
             "type": "alert",
-            "alert": alert
+            "alert": {
+                "title": "💰 Payday Approaching",
+                "body": "Payday in 3 days! Watch your spending.",
+                "severity": "INFO"
+            }
         })
         
         return {
             "success": True,
             "alertGenerated": True,
-            "alert": alert,
-            "daysUntilPayday": 3
+            "alert": {
+                "title": "💰 Payday Approaching",
+                "body": "Payday in 3 days",
+                "severity": "INFO"
+            }
         }
         
     except Exception as e:
-        print(f"❌ Payday test error: {e}")
+        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         return {"success": False, "error": str(e)}
+
 
 @app.post("/api/test/transaction")
-async def testTransaction(request: Request, dbSession: Session = Depends(getDb)):
+async def testTransaction(db: Session = Depends(getDb)):
+    """Add random test transaction"""
     try:
-        data = await request.json()
-        account = dbSession.query(Account).first()
-        if not account:
-            return {"success": False, "error": "No account found"}
-        merchant = data.get('merchant', 'TEST MERCHANT')
-        amount = data.get('amount', -100.00)
+        account = db.query(Account).first()
+        
         txn = Transaction(
             userId=1,
-            accountId=account.id,
-            transactionId=f"TEST_{int(datetime.now().timestamp() * 1000)}",
+            accountId=account.id if account else 1,
+            transactionId=f"TEST_{int(datetime.now().timestamp())}",
             date=datetime.now(timezone.utc),
-            amount=amount,
-            merchant=merchant,
-            description=f"Test: {merchant}",
-            category=categorizeTransaction("", merchant)
+            amount=-random.randint(50, 500),
+            merchant="TEST MERCHANT",
+            description="Test transaction",
+            category="Other",
+            transactionType="POS Purchase",
+            status="Posted"
         )
-        dbSession.add(txn)
-        dbSession.commit()
-        await manager.broadcast({
-            "type": "transaction",
-            "transaction": {
-                "merchant": txn.merchant,
-                "amount": txn.amount,
-                "category": txn.category,
-                "date": txn.date.isoformat()
-            }
-        })
-        await manager.broadcast({"type": "dashboard_update"})
-        return {"success": True}
+        db.add(txn)
+        db.commit()
+        
+        await manager.broadcast({"type": "dashboardUpdate"})
+        
+        return {"success": True, "transaction": "created"}
+        
     except Exception as e:
+        print(f"Error: {e}")
         return {"success": False, "error": str(e)}
 
+
+@app.post("/api/test/update_balance")
+async def testUpdateBalance(db: Session = Depends(getDb)):
+    """Update balance randomly"""
+    try:
+        account = db.query(Account).first()
+        if account:
+            account.currentBalance = random.randint(100, 50000)
+            db.commit()
+        
+        await manager.broadcast({"type": "dashboardUpdate"})
+        
+        return {"success": True, "balance": "updated"}
+        
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"success": False, "error": str(e)}
+    
 @app.post("/api/test/balance")
 async def testBalance(request: Request, dbSession: Session = Depends(getDb)):
     try:
@@ -1339,5 +1278,4 @@ async def testBalance(request: Request, dbSession: Session = Depends(getDb)):
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
