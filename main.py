@@ -1,7 +1,7 @@
+import random
 import os
 import json
 from datetime import datetime, timedelta, timezone
-from random import random
 from typing import List, Optional
 from pathlib import Path
 
@@ -865,7 +865,7 @@ async def testLowBalance(db: Session = Depends(getDb)):
             title="⚠️ Low Balance Alert",
             body=f"Your balance is critically low at R 450.00. You're below the R 1,000 threshold.",
             severity="WARNING",
-            triggered=True
+            
         )
         db.add(alert)
         db.commit()
@@ -884,7 +884,7 @@ async def testLowBalance(db: Session = Depends(getDb)):
         
         return {
             "success": True,
-            "alertGenerated": True,
+            "alert_generated": True,
             "alert": {
                 "title": "⚠️ Low Balance Alert",
                 "body": "Balance is R 450.00 (below R 1,000 threshold)",
@@ -930,7 +930,7 @@ async def testLargeTransaction(db: Session = Depends(getDb)):
             title="🚨 Suspicious Large Transaction",
             body="Transaction of R 5,500.00 at SUSPICIOUS MERCHANT detected!",
             severity="CRITICAL",
-            triggered=True
+            
         )
         db.add(alert)
         db.commit()
@@ -949,7 +949,7 @@ async def testLargeTransaction(db: Session = Depends(getDb)):
         
         return {
             "success": True,
-            "alertGenerated": True,
+            "alert_generated": True,
             "alert": {
                 "title": "🚨 Suspicious Large Transaction",
                 "body": "R 5,500.00 at SUSPICIOUS MERCHANT",
@@ -996,7 +996,7 @@ async def testSpendingSpike(db: Session = Depends(getDb)):
             title="📊 Spending Spike Detected!",
             body="Unusual spending pattern: 5 transactions totaling R 2,250 in the last hour!",
             severity="WARNING",
-            triggered=True
+            
         )
         db.add(alert)
         db.commit()
@@ -1015,7 +1015,7 @@ async def testSpendingSpike(db: Session = Depends(getDb)):
         
         return {
             "success": True,
-            "alertGenerated": True,
+            "alert_generated": True,
             "alert": {
                 "title": "📊 Spending Spike Detected",
                 "body": "5 rapid transactions, R 2,250 total",
@@ -1062,7 +1062,7 @@ async def testNewSubscription(db: Session = Depends(getDb)):
             title="🔔 New Subscription Detected",
             body="Recurring payment detected: NETFLIX.COM (R 169.00/month)",
             severity="INFO",
-            triggered=True
+            
         )
         db.add(alert)
         db.commit()
@@ -1081,7 +1081,7 @@ async def testNewSubscription(db: Session = Depends(getDb)):
         
         return {
             "success": True,
-            "alertGenerated": True,
+            "alert_generated": True,
             "alert": {
                 "title": "🔔 New Subscription Detected",
                 "body": "NETFLIX.COM - R 169/month",
@@ -1133,7 +1133,7 @@ async def testCategoryLimit(db: Session = Depends(getDb)):
             title="🎯 Category Spending Limit Exceeded",
             body=f"Restaurant spending (R {total:.2f}) has exceeded your R 2,000 monthly limit!",
             severity="WARNING",
-            triggered=True
+            
         )
         db.add(alert)
         db.commit()
@@ -1152,7 +1152,7 @@ async def testCategoryLimit(db: Session = Depends(getDb)):
         
         return {
             "success": True,
-            "alertGenerated": True,
+            "alert_generated": True,
             "alert": {
                 "title": "🎯 Category Limit Exceeded",
                 "body": f"Restaurants: R {total:.2f} / R 2,000",
@@ -1178,7 +1178,7 @@ async def testPayday(db: Session = Depends(getDb)):
             title="💰 Payday Approaching",
             body="Your payday is in 3 days! Current balance is low. Plan your spending wisely.",
             severity="INFO",
-            triggered=True
+            
         )
         db.add(alert)
         db.commit()
@@ -1195,7 +1195,7 @@ async def testPayday(db: Session = Depends(getDb)):
         
         return {
             "success": True,
-            "alertGenerated": True,
+            "alert_generated": True,
             "alert": {
                 "title": "💰 Payday Approaching",
                 "body": "Payday in 3 days",
