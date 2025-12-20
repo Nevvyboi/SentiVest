@@ -51,7 +51,6 @@ class InvestecAPI:
             raise
     
     def _ensureAuthenticated(self):
-        """Ensuring we have a valid access token"""
         if not self.accessToken or not self.tokenExpiresAt:
             self.getAccessToken()
         elif datetime.now(timezone.utc) >= self.tokenExpiresAt - timedelta(minutes=5):
@@ -90,9 +89,6 @@ class InvestecAPI:
             return []
     
     def getAccountBalance(self, accountId: str) -> Optional[Dict]:
-        """
-        Get balance for specific account
-        """
         try:
             data = self._callApi(f"/za/pb/v1/accounts/{accountId}/balance")
             balance = data.get("data", {})
@@ -154,7 +150,6 @@ class InvestecAPI:
             return []
     
     def getBeneficiaries(self) -> List[Dict]:
-        """Get all beneficiaries"""
         try:
             data = self._callApi("/za/pb/v1/accounts/beneficiaries")
             beneficiaries = data.get("data", {}).get("beneficiaries", [])
@@ -167,9 +162,6 @@ class InvestecAPI:
             return []
     
     def getAllData(self) -> Dict[str, Any]:
-        """
-        Get all account data in one call
-        """
         accountsData = []
         
         accounts = self.getAccounts()
@@ -194,7 +186,6 @@ class InvestecAPI:
 
 
 class InvestecDataTransformer:
-    
     @staticmethod
     def transformAccount(investecAccount: Dict, balanceData: Dict) -> Dict:
         return {
@@ -257,9 +248,6 @@ class InvestecDataTransformer:
 
 
 def createInvestecClient() -> Optional[InvestecAPI]:
-    """
-    Create and authenticate Investec API client
-    """
     try:
         client = InvestecAPI()
         client.getAccessToken()

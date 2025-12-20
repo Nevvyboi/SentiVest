@@ -7,8 +7,6 @@ from sqlalchemy.orm import Session
 
 
 class FinancialAIAgent:
-    """Simple AI agent for financial analysis"""
-    
     def __init__(self, db: Session, anthropicApiKey: str = None):
         """Initialize with database session and API key"""
         self.db = db
@@ -20,7 +18,7 @@ class FinancialAIAgent:
             if var in os.environ:
                 del os.environ[var]
         
-        apiKey = anthropicApiKey if anthropicApiKey else "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"
+        apiKey = anthropicApiKey if anthropicApiKey else "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"
         
         # Initialize client with ONLY the api_key parameter
         # Don't pass anything else to avoid proxy issues
