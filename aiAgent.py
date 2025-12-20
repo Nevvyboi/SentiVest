@@ -18,7 +18,7 @@ class FinancialAIAgent:
             if var in os.environ:
                 del os.environ[var]
         
-        apiKey = anthropicApiKey if anthropicApiKey else "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"
+        apiKey = anthropicApiKey if anthropicApiKey else ""
         
         # Initialize client with ONLY the api_key parameter
         # Don't pass anything else to avoid proxy issues
@@ -157,4 +157,5 @@ Always base your responses on the financial data provided above."""
             
         except Exception as e:
             print(f"❌ Error getting context: {e}")
+
             return "Financial data temporarily unavailable."
