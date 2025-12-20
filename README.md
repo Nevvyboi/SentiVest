@@ -82,8 +82,8 @@
    
    To enable the AI chat feature, get your Anthropic API key:
    ```bash
-   # Option 1: Environment variable
-   export ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"
+   # Option 1: Variable change
+   anthropicApiKey = "" (line 845)
    
    # Option 2: Add to aiAgent.py (line 21)
    ```
