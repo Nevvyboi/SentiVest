@@ -841,7 +841,7 @@ async def aiChat(request: Request, dbSession: Session = Depends(getDb)):
         transactions = dbSession.query(Transaction).filter(
             Transaction.userId == user.id
         ).order_by(Transaction.date.desc()).limit(100).all()
-        aiAgent = FinancialAIAgent(db=dbSession, anthropic_api_key="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")
+        aiAgent = FinancialAIAgent(db=dbSession, anthropic_api_key="")
         responseData = await aiAgent.chat(user_message=message)
         return {"response": responseData.get("response", "No response")}
     except Exception as e:
@@ -1339,4 +1339,5 @@ async def testBalance(request: Request, dbSession: Session = Depends(getDb)):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
