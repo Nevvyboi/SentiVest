@@ -157,5 +157,4 @@ Always base your responses on the financial data provided above."""
             
         except Exception as e:
             print(f"❌ Error getting context: {e}")
-
             return "Financial data temporarily unavailable."
