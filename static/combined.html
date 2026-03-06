@@ -1,0 +1,3260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentiVest - AI Banking Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--navy:#003B5C;--teal:#007A6E;--teal-light:#E8F5F2;--bg:#FAFBFC;--white:#FFFFFF;
+--border:#E8ECF0;--border-light:#F0F2F5;--text:#1A2B3C;--text-mid:#4A5D6F;
+--text-light:#8E99A4;--text-muted:#B0BAC5;--red:#B91C1C;--red-bg:#FEF2F2;
+--orange:#C2571A;--orange-bg:#FEF3EB;--yellow:#C68A0E;--yellow-bg:#FEF9EB;
+--green:#2E7D6F;--green-bg:#EBF5F0;
+}
+body{font-family:'Libre Franklin',sans-serif;background:#1A2332;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;gap:24px;padding:32px}
+
+/* Phone */
+.phone{width:320px;height:660px;border:2px solid #D1D5DB;border-radius:32px;background:var(--bg);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.12);display:flex;flex-direction:column;flex-shrink:0;position:relative}
+.status-bar{background:var(--navy);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:8px 20px;font-size:11px;font-weight:500}
+.phone-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:0}
+.phone-content::-webkit-scrollbar{width:0}
+.bottom-nav{display:flex;background:var(--white);border-top:1px solid var(--border);padding:6px 8px;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border-radius:10px;cursor:pointer;font-size:9px;white-space:nowrap;opacity:0.35;transition:all 0.2s;position:relative}
+.nav-item.active{opacity:1;color:var(--navy);font-weight:600}
+.nav-item:hover{opacity:0.7}
+.nav-icon{font-size:18px;line-height:1}
+
+/* Floating Mic FAB */
+/* Phone Toast */
+.phone-toast{position:absolute;top:32px;left:12px;right:12px;z-index:55;padding:10px 14px;border-radius:10px;font-size:11px;font-weight:500;color:#fff;transform:translateY(-100px);opacity:0;transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);pointer-events:none;display:flex;align-items:center;gap:8px}
+.phone-toast.show{transform:translateY(0);opacity:1}
+.phone-toast.toast-safe{background:linear-gradient(135deg,#007A6E,#059669)}
+.phone-toast.toast-warning{background:linear-gradient(135deg,#C68A0E,#D97706)}
+.phone-toast.toast-critical{background:linear-gradient(135deg,#B91C1C,#DC2626)}
+.phone-toast.toast-info{background:linear-gradient(135deg,#003B5C,#1E40AF)}
+.phone-toast-icon{font-size:16px;flex-shrink:0}
+.phone-toast-text{flex:1;line-height:1.3}
+.mic-fab{position:absolute;bottom:56px;right:12px;width:44px;height:44px;border-radius:50%;background:var(--navy);border:none;color:#fff;font-size:18px;cursor:pointer;z-index:50;box-shadow:0 4px 12px rgba(0,59,92,0.4);transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+.mic-fab:hover{transform:scale(1.1);box-shadow:0 6px 16px rgba(0,59,92,0.5)}
+.mic-fab.listening{background:var(--red);animation:fab-pulse 1s infinite}
+@keyframes fab-pulse{0%,100%{box-shadow:0 0 0 0 rgba(185,28,28,0.4)}50%{box-shadow:0 0 0 10px rgba(185,28,28,0)}}
+
+/* Voice Overlay */
+.voice-overlay{display:none;position:absolute;inset:0;background:rgba(250,251,252,0.97);z-index:60;flex-direction:column;border-radius:30px;overflow:hidden}
+.voice-overlay.active{display:flex}
+.vo-header{padding:44px 16px 0;text-align:center;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.vo-header-title{font-size:14px;font-weight:700;color:var(--navy);letter-spacing:0.3px}
+.vo-header-sub{font-size:9px;color:var(--text-light);font-weight:400}
+.vo-close{position:absolute;top:40px;right:16px;background:none;border:none;font-size:20px;color:var(--text-light);cursor:pointer;z-index:2}
+.vo-chat{flex:1;overflow-y:auto;padding:8px 16px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.vo-chat::-webkit-scrollbar{width:3px}
+.vo-chat::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px}
+.vo-bubble{max-width:85%;padding:8px 12px;border-radius:14px;font-size:11px;line-height:1.4;word-wrap:break-word;animation:bubbleIn 0.25s ease}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.vo-bubble.user{align-self:flex-end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}
+.vo-bubble.ai{align-self:flex-start;background:#F0F4F8;color:var(--text);border-bottom-left-radius:4px}
+.vo-bubble.ai .vo-action-badge{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;background:rgba(0,122,110,0.12);color:var(--teal)}
+/* Payment Flow UI */
+.pay-flow{margin-top:6px;border-radius:12px;overflow:hidden;background:#fff;border:1px solid #e2e8f0}
+.pay-flow-header{padding:10px 14px;background:linear-gradient(135deg,#003B5C,#007A6E);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.pay-flow-body{padding:12px 14px}
+.pay-ben-list{display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto}
+.pay-ben-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#f7fafc;cursor:pointer;transition:all 0.15s}
+.pay-ben-item:hover,.pay-ben-item.selected{background:#e6fffa;border-color:var(--teal)}
+.pay-ben-avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.pay-ben-avatar.company{background:var(--teal)}
+.pay-ben-info{flex:1;min-width:0}
+.pay-ben-name{font-size:12px;font-weight:600;color:var(--navy)}
+.pay-ben-bank{font-size:10px;color:#94a3b8}
+.pay-confirm-card{border-radius:12px;overflow:hidden;border:1px solid #e2e8f0}
+.pay-confirm-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:11px}
+.pay-confirm-row:last-child{border:none}
+.pay-confirm-label{color:#64748b}
+.pay-confirm-value{font-weight:600;color:var(--navy)}
+.pay-confirm-amount{font-size:20px;font-weight:700;color:var(--navy);text-align:center;padding:12px 0}
+.pay-btn{width:100%;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;transition:all 0.2s}
+.pay-btn-confirm{background:var(--teal);color:#fff}
+.pay-btn-confirm:hover{background:#005f56}
+.pay-btn-cancel{background:#f1f5f9;color:#64748b}
+.pay-btn-cancel:hover{background:#e2e8f0}
+.pay-success{text-align:center;padding:16px 0}
+.pay-success-icon{font-size:40px;margin-bottom:8px}
+.pay-success-amount{font-size:22px;font-weight:700;color:var(--teal)}
+.pay-success-to{font-size:13px;color:#64748b;margin-top:4px}
+.pay-success-bal{font-size:11px;color:#94a3b8;margin-top:8px}
+.pay-amount-input{width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:16px;font-weight:600;text-align:center;outline:none;margin:8px 0}
+.pay-amount-input:focus{border-color:var(--teal)}
+.pay-error{text-align:center;padding:12px;color:var(--red);font-size:12px}
+/* Profile / Settings */
+.prof-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#003B5C,#007A6E);color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.prof-name-row{display:flex;gap:8px;margin-bottom:16px}
+.prof-input{flex:1;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:600;outline:none;font-family:inherit}
+.prof-input:focus{border-color:var(--teal)}
+.prof-save-btn{padding:10px 16px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer}
+.prof-save-btn:hover{background:#005f56}
+.prof-section-title{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #f1f5f9}
+.prof-facts{display:flex;flex-direction:column;gap:6px}
+.prof-fact{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:#f7fafc;font-size:12px}
+.prof-fact-text{flex:1;color:var(--navy)}
+.prof-fact-del{background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:14px;padding:0 4px}
+.prof-fact-del:hover{color:var(--red)}
+.prof-add-btn{margin-top:8px;padding:8px 12px;background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:8px;color:#64748b;font-size:11px;cursor:pointer;width:100%;text-align:center}
+.prof-add-btn:hover{background:#e2e8f0;border-color:#94a3b8}
+.prof-prefs{display:flex;flex-direction:column;gap:6px}
+.prof-pref{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#f7fafc;font-size:12px}
+.prof-stat{font-size:13px;color:var(--navy);font-weight:600}
+.prof-summary{font-size:11px;color:#64748b;margin-top:4px;line-height:1.5;background:#f7fafc;border-radius:8px;padding:8px 10px;min-height:20px}
+.prof-danger-btn{flex:1;padding:10px;background:#fef2f2;color:var(--red);border:1px solid #fecaca;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer}
+.prof-danger-btn:hover{background:#fee2e2}
+.prof-edit-input{width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:inherit}
+.vo-bubble-time{font-size:8px;color:rgba(0,0,0,0.3);margin-top:2px}
+.vo-typing{align-self:flex-start;padding:8px 14px;border-radius:14px;background:#F0F4F8;animation:bubbleIn 0.25s ease}
+.vo-recording{display:flex;align-items:center;gap:8px;padding:8px 12px;justify-content:center;width:100%;background:rgba(185,28,28,0.06);border-radius:12px;margin-bottom:4px}
+.vo-rec-dot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:recPulse 1s infinite;flex-shrink:0}
+.vo-rec-text{font-size:11px;font-weight:600;color:var(--red);flex-shrink:0}
+.vo-rec-time{font-size:11px;color:var(--text-mid);font-family:'DM Mono',monospace;flex-shrink:0;min-width:24px}
+.vo-waveform{display:flex;align-items:center;gap:2px;height:32px;flex:1;justify-content:center;overflow:hidden}
+.vo-wave-bar{width:3px;border-radius:2px;background:var(--red);min-height:3px}
+@keyframes recPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.vo-typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text-light);margin:0 1px;animation:typingDot 1.2s infinite}
+.vo-typing span:nth-child(2){animation-delay:0.2s}
+.vo-typing span:nth-child(3){animation-delay:0.4s}
+@keyframes typingDot{0%,60%,100%{opacity:0.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.vo-welcome{text-align:center;color:var(--text-light);font-size:11px;padding:16px 10px 4px}
+.vo-welcome-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.vo-welcome-action{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:6px 10px;font-size:9.5px;color:var(--text-mid);cursor:pointer;transition:all 0.15s;font-family:'Libre Franklin',sans-serif;display:flex;align-items:center;gap:4px}
+.vo-welcome-action:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.vo-welcome-action .wa-icon{font-size:12px}
+.vo-bottom{flex-shrink:0;padding:10px 14px 14px;background:rgba(250,251,252,0.95);border-top:1px solid var(--border)}
+.vo-input-row{display:flex;align-items:center;gap:8px;width:100%}
+.vo-text-input{flex:1;border:1.5px solid var(--border);border-radius:22px;padding:9px 16px;font-size:12px;font-family:'Libre Franklin',sans-serif;outline:none;transition:border 0.2s}
+.vo-text-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,122,110,0.08)}
+.vo-text-input::placeholder{color:var(--text-muted)}
+.vo-text-send{width:34px;height:34px;border-radius:50%;background:var(--navy);border:none;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s}
+.vo-text-send:hover{background:var(--teal)}
+.vo-mic-mini{width:34px;height:34px;border-radius:50%;background:var(--white);border:1.5px solid var(--border);color:var(--text-mid);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+.vo-mic-mini:hover{border-color:var(--teal);color:var(--teal)}
+.vo-mic-mini.listening{background:var(--red);border-color:var(--red);color:#fff;animation:fab-pulse 1s infinite}
+.vo-mic-mini.unavailable{opacity:0.3;cursor:default}
+.vo-chips{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
+.vo-chip{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:3px 9px;font-size:9px;color:var(--text-mid);cursor:pointer;transition:all 0.15s;font-family:'Libre Franklin',sans-serif}
+.vo-chip:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+
+/* Right Panel */
+.right-panel{flex:1;min-width:400px;max-width:900px;height:660px;background:#1A2332;border-radius:12px;border:1px solid #2A3342;overflow:hidden;display:flex;flex-direction:column}
+.panel-tabs{display:flex;background:#141B27;border-bottom:1px solid #2A3342;flex-shrink:0}
+.panel-tab{flex:1;padding:10px 6px;text-align:center;font-size:11px;font-weight:500;color:#8E99A4;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Libre Franklin',sans-serif}
+.panel-tab:hover{color:#fff;background:rgba(255,255,255,0.03)}
+.panel-tab.active{color:#007A6E;border-bottom-color:#007A6E;background:rgba(0,122,110,0.05)}
+.panel-content{flex:1;overflow:hidden;position:relative}
+.panel-page{display:none;position:absolute;inset:0;overflow-y:auto}
+.panel-page.active{display:block}
+.panel-page::-webkit-scrollbar{width:4px}
+.panel-page::-webkit-scrollbar-thumb{background:#2A3342;border-radius:2px}
+
+/* Audit styles */
+.audit-header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #2A3342}
+.adot{width:10px;height:10px;border-radius:50%}
+.adot.r{background:#FF5F57}.adot.y{background:#FEBC2E}.adot.g{background:#28C840}
+.audit-title{color:#8E99A4;font-size:12px;font-family:'DM Mono',monospace;flex:1;margin-left:8px}
+.live-badge{color:#28C840;font-size:10px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#28C840;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.audit-log{overflow-y:auto;padding:12px 16px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.6}
+.log-entry{margin-bottom:2px;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.log-system{color:#8E99A4}.log-info{color:#6B9FD6}.log-process{color:#A78BFA}
+.log-action{color:#C68A0E}.log-safe{color:#2E7D6F}.log-warning{color:#C2571A}.log-critical{color:#B91C1C}
+
+/* Phone Pages */
+.page{display:none;animation:slideIn 0.25s ease}
+.page.active{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+
+/* Home — Card Carousel */
+.card-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:12px 16px;-ms-overflow-style:none;scrollbar-width:none}
+.card-carousel::-webkit-scrollbar{display:none}
+.bank-card{min-width:270px;height:164px;border-radius:16px;padding:18px;color:#fff;position:relative;overflow:hidden;scroll-snap-align:center;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;flex-shrink:0}
+.bank-card:hover{transform:scale(1.02)}
+.bank-card.active{box-shadow:0 4px 20px rgba(0,59,92,0.4);transform:scale(1.03)}
+.bank-card .card-bg{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0}
+.bank-card .card-bg circle{opacity:0.08}
+.bank-card-type{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;opacity:0.7;position:relative;z-index:1}
+.bank-card-name{font-size:13px;font-weight:600;margin:4px 0 12px;position:relative;z-index:1}
+.bank-card-number{font-size:12px;font-family:'DM Mono',monospace;letter-spacing:2px;opacity:0.8;position:relative;z-index:1}
+.bank-card-balance{font-size:24px;font-weight:700;font-family:'DM Mono',monospace;margin-top:12px;position:relative;z-index:1}
+.bank-card-logo{position:absolute;bottom:14px;right:18px;font-size:10px;font-weight:700;letter-spacing:1px;opacity:0.5;z-index:1}
+.bank-card-frozen{position:absolute;top:10px;right:12px;font-size:9px;background:rgba(185,28,28,0.6);padding:2px 8px;border-radius:8px;z-index:1}
+.card-dots{display:flex;justify-content:center;gap:6px;padding:6px 0 2px}
+.card-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all 0.2s}
+.card-dot.active{width:18px;border-radius:4px;background:var(--navy)}
+.quick-actions{display:flex;gap:8px;padding:10px 16px}
+.quick-btn{flex:1;padding:10px 6px 8px;border-radius:12px;border:1px solid var(--border);background:var(--white);text-align:center;font-size:10px;cursor:pointer;transition:all 0.15s;font-family:'Libre Franklin',sans-serif;font-weight:600;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:4px}
+.quick-btn:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.quick-btn:active{transform:scale(0.96)}
+.qb-icon{font-size:18px;line-height:1}
+.section-title{font-size:12px;font-weight:600;color:var(--text);padding:8px 16px 4px}
+.txn-list{padding:0 16px 12px}
+.txn-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--white);border-radius:10px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all 0.15s}
+.txn-item:hover{border-color:var(--teal);transform:translateX(2px)}
+.txn-icon{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--bg)}
+.txn-info{flex:1}.txn-merchant{font-size:12px;font-weight:600;color:var(--text)}
+.txn-meta{font-size:10px;color:var(--text-light);font-family:'DM Mono',monospace}
+.txn-right{text-align:right}.txn-amount{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;color:var(--text)}
+.risk-badge{font-size:8px;padding:2px 6px;border-radius:4px;font-weight:600;display:inline-block;margin-top:2px}
+.risk-BLOCK{background:var(--red-bg);color:var(--red)}.risk-FLAG{background:var(--orange-bg);color:var(--orange)}
+.risk-ALERT{background:var(--yellow-bg);color:var(--yellow)}.risk-SAFE{background:var(--green-bg);color:var(--green)}
+/* Ledger */
+.ledger-summary{display:flex;gap:6px;padding:8px 12px;font-size:11px;font-weight:600}
+.ledger-stat{padding:4px 8px;border-radius:6px;flex:1;text-align:center}
+.ledger-stat.in{background:var(--green-bg);color:var(--green)}
+.ledger-stat.out{background:var(--red-bg);color:var(--red)}
+.ledger-stat.net{background:var(--navy-bg,rgba(0,59,92,0.08));color:var(--navy)}
+.ledger-filters{display:flex;gap:6px;padding:4px 12px}
+.ledger-filter{border:none;padding:4px 12px;border-radius:12px;font-size:10px;cursor:pointer;background:var(--border-light);color:var(--text-light);font-weight:500;transition:all 0.2s}
+.ledger-filter.active{background:var(--navy);color:#fff}
+.ledger-list{padding:4px 0;max-height:calc(100% - 120px);overflow-y:auto}
+.ledger-item{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);cursor:pointer}
+.ledger-item:hover{background:rgba(0,0,0,0.02)}
+.ledger-icon{font-size:16px;width:28px;text-align:center}
+.ledger-info{flex:1;min-width:0}
+.ledger-merchant{font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ledger-meta{font-size:9px;color:var(--text-light)}
+.ledger-right{text-align:right;min-width:80px}
+.ledger-amount{font-size:11px;font-weight:600;font-family:'DM Mono',monospace}
+.ledger-balance{font-size:9px;color:var(--text-light);font-family:'DM Mono',monospace}
+/* More menu */
+.more-menu{display:none;position:absolute;bottom:56px;left:0;right:0;background:var(--white);border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,0.12);z-index:90;padding:8px 0 4px}
+.more-menu.open{display:block;animation:slideUp 0.2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.more-item{padding:12px 20px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.15s;border-radius:8px;margin:0 8px}
+.more-item:hover{background:var(--teal-light)}
+.more-badge{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--red);display:none}
+.more-badge-inline{font-size:10px;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px;margin-left:auto}
+.nav-item{position:relative}
+
+/* Detail */
+.detail-header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.back-btn{cursor:pointer;font-size:18px;color:var(--navy);background:none;border:none;padding:4px}
+.detail-title{font-size:14px;font-weight:600;color:var(--text)}
+.detail-hero{text-align:center;padding:20px}
+.detail-icon{font-size:40px;margin-bottom:8px}
+.detail-amount{font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text)}
+.detail-merchant{font-size:13px;color:var(--text-mid);margin-top:4px}
+.detail-time{font-size:11px;color:var(--text-light);font-family:'DM Mono',monospace;margin-top:2px}
+.spinner{text-align:center;padding:20px;color:var(--text-light);font-size:12px}
+.spinner::after{content:'';display:block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin 0.6s linear infinite;margin:8px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.verdict-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;margin:8px auto}
+.verdict-SAFE{background:var(--green-bg);color:var(--green)}.verdict-FLAG{background:var(--orange-bg);color:var(--orange)}
+.verdict-ALERT{background:var(--yellow-bg);color:var(--yellow)}.verdict-BLOCK{background:var(--red-bg);color:var(--red)}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin:8px 16px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.card-label{font-size:10px;font-weight:600;color:var(--text-light);text-transform:uppercase;margin-bottom:6px}
+.card-text{font-size:12px;color:var(--text-mid);line-height:1.5}
+.tags{display:flex;flex-wrap:wrap;gap:4px;padding:0 16px;margin-bottom:8px}
+.tag{background:var(--teal-light);color:var(--teal);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:500}
+.action-btns{padding:8px 16px 16px;display:flex;flex-direction:column;gap:6px}
+.action-btn{padding:10px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Libre Franklin',sans-serif;transition:all 0.15s}
+.action-btn.primary{background:var(--navy);color:#fff}
+.action-btn.danger{background:var(--red);color:#fff}
+.action-btn.secondary{background:var(--white);color:var(--text);border:1px solid var(--border)}
+
+/* Chat */
+.chat-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.chat-messages{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;min-height:380px;max-height:480px}
+.msg{max-width:85%;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.5;animation:fadeIn 0.3s}
+.msg.agent{background:var(--white);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.user{background:var(--navy);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg-label{font-size:9px;font-weight:600;color:var(--teal);margin-bottom:4px}
+.chat-input-area{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--border);background:var(--white)}
+.chat-input{flex:1;border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-size:12px;font-family:'Libre Franklin',sans-serif;outline:none}
+.chat-input:focus{border-color:var(--teal)}
+.chat-send{width:32px;height:32px;border-radius:50%;background:var(--navy);border:none;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+
+/* Budgets */
+.budget-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px}
+.budget-title{font-size:14px;font-weight:600;color:var(--text)}
+.over-badge{background:var(--red-bg);color:var(--red);font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px}
+.budget-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px;margin:0 16px 8px}
+.budget-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.budget-cat{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text)}
+.budget-period{font-size:10px;color:var(--text-light)}
+.budget-amounts{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mid)}
+.progress-bar{height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+.progress-ok{background:var(--navy)}.progress-warn{background:var(--yellow)}.progress-over{background:var(--red)}
+.over-warning{font-size:10px;color:var(--red);font-weight:500;margin-top:4px}
+
+/* Alerts */
+.alert-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px;margin:0 16px 8px;border-left:3px solid}
+.alert-top{display:flex;align-items:flex-start;gap:8px}
+.alert-icon{font-size:18px}.alert-title{font-size:12px;font-weight:600;color:var(--text)}
+.alert-body{font-size:11px;color:var(--text-mid);line-height:1.4;margin-top:4px}
+.alert-time{font-size:10px;color:var(--text-light);font-family:'DM Mono',monospace;margin-top:4px}
+
+/* Documents */
+.doc-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px;margin:0 16px 8px;display:flex;align-items:center;gap:10px}
+.doc-icon{font-size:24px}.doc-info{flex:1}
+.doc-type{font-size:12px;font-weight:600;color:var(--text)}
+.doc-period{font-size:10px;color:var(--text-light)}
+.doc-meta{font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:2px}
+.fetch-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--navy);background:var(--white);color:var(--navy);font-size:10px;font-weight:600;cursor:pointer;font-family:'Libre Franklin',sans-serif}
+.fetch-btn:hover{background:var(--navy);color:#fff}
+.doc-tip{border:2px dashed var(--border);border-radius:12px;padding:16px;margin:0 16px 8px;text-align:center;font-size:11px;color:var(--text-light)}
+
+/* Scanner */
+.scan-area{border:2px dashed var(--border);border-radius:12px;margin:16px;padding:40px;text-align:center;cursor:pointer;transition:all 0.2s}
+.scan-area:hover{border-color:var(--teal);background:var(--teal-light)}
+.scan-icon{font-size:40px;margin-bottom:8px}.scan-text{font-size:12px;color:var(--text-light)}
+.scan-result{padding:0 16px}
+.scan-merchant{font-size:14px;font-weight:600;color:var(--text)}
+.scan-amount{font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text);margin:4px 0}
+.scan-items{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.scan-item{background:var(--teal-light);color:var(--teal);padding:3px 8px;border-radius:6px;font-size:10px}
+.scan-badges{display:flex;gap:6px;margin-top:8px}
+.scan-badge{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:600}
+.badge-within{background:var(--green-bg);color:var(--green)}.badge-over{background:var(--red-bg);color:var(--red)}
+.badge-matched{background:var(--teal-light);color:var(--teal)}.badge-new{background:var(--yellow-bg);color:var(--yellow)}
+
+/* Tasks */
+.task-card{display:flex;align-items:flex-start;gap:10px;background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px;margin:0 16px 8px;cursor:pointer}
+.task-check{width:18px;height:18px;border-radius:50%;border:2px solid;cursor:pointer;flex-shrink:0;margin-top:1px}
+.task-check.done{background:var(--green);border-color:var(--green)}
+.task-check.high{border-color:var(--red)}.task-check.medium{border-color:var(--yellow)}.task-check.low{border-color:var(--green)}
+.task-info{flex:1}.task-text{font-size:12px;font-weight:500;color:var(--text)}
+.task-text.done{text-decoration:line-through;color:var(--text-light)}
+.task-meta{font-size:10px;color:var(--text-light);margin-top:2px}
+.priority-pill{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+.priority-high{background:var(--red-bg);color:var(--red)}.priority-medium{background:var(--yellow-bg);color:var(--yellow)}.priority-low{background:var(--green-bg);color:var(--green)}
+
+/* Report */
+.report-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px}
+.rstat-card{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:12px;text-align:center}
+.rstat-value{font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--navy)}
+.rstat-label{font-size:10px;color:var(--text-light);margin-top:2px}
+.cat-bar{display:flex;align-items:center;gap:8px;padding:4px 16px}
+.cat-name{font-size:11px;color:var(--text-mid);width:80px}
+.cat-fill{height:8px;border-radius:4px;background:var(--navy);transition:width 0.8s ease}
+.cat-amount{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-light);min-width:60px;text-align:right}
+.insight-item{display:flex;gap:6px;padding:4px 16px;font-size:11px;color:var(--text-mid);line-height:1.4}
+
+/* Live Test */
+.test-form{padding:16px}
+.test-input{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Libre Franklin',sans-serif;margin-bottom:8px;outline:none}
+.test-input:focus{border-color:var(--teal)}
+.test-btn{width:100%;padding:10px;border-radius:8px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Libre Franklin',sans-serif}
+.test-result{margin-top:12px}
+
+/* ===== Dashboard Tab ===== */
+.dash-content{padding:16px;color:#fff}
+.dash-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.dash-stat{background:rgba(255,255,255,0.05);border:1px solid #2A3342;border-radius:10px;padding:12px}
+.dash-stat-label{font-size:10px;color:#8E99A4;margin-bottom:2px}
+.dash-stat-value{font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:#007A6E}
+.dash-stat-sub{font-size:9px;color:#8E99A4;margin-top:2px}
+.dash-panel{background:rgba(255,255,255,0.03);border:1px solid #2A3342;border-radius:10px;padding:14px;margin-bottom:12px}
+.dash-panel-title{font-size:12px;font-weight:600;color:#fff;margin-bottom:10px}
+.dash-spend-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.dash-spend-cat{font-size:10px;color:#8E99A4;width:80px}
+.dash-spend-fill-bg{flex:1;height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden}
+.dash-spend-fill{height:100%;border-radius:3px;background:#007A6E;transition:width 1s}
+.dash-spend-amt{font-size:10px;font-family:'DM Mono',monospace;color:#8E99A4;min-width:65px;text-align:right}
+.dash-feed{max-height:180px;overflow-y:auto}
+.dash-feed::-webkit-scrollbar{width:3px}.dash-feed::-webkit-scrollbar-thumb{background:#2A3342;border-radius:2px}
+.dash-feed-item{display:flex;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:10px}
+.dash-feed-time{font-family:'DM Mono',monospace;color:rgba(255,255,255,0.3);min-width:50px}
+.dash-feed-badge{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;min-width:36px;text-align:center}
+.dbadge-BLOCK{background:rgba(185,28,28,0.15);color:#B91C1C}.dbadge-FLAG{background:rgba(194,87,26,0.15);color:#C2571A}
+.dbadge-ALERT{background:rgba(198,138,14,0.15);color:#C68A0E}.dbadge-SAFE{background:rgba(46,125,111,0.15);color:#2E7D6F}
+.dash-feed-text{color:rgba(255,255,255,0.5);flex:1}
+.dash-pred-item{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.dash-pred-title{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
+.dash-pred-text{font-size:10px;color:rgba(255,255,255,0.5)}
+.dash-pred-risk{font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;display:inline-block;margin-top:3px}
+.drisk-high{background:rgba(185,28,28,0.15);color:#B91C1C}.drisk-low{background:rgba(46,125,111,0.15);color:#2E7D6F}
+.dash-mini-graph{width:100%;height:160px;background:#0A0F1A;border-radius:8px;overflow:hidden}
+.dash-mini-graph canvas{width:100%;height:100%}
+
+/* ===== Graph Tab ===== */
+.graph-container{position:relative;width:100%;height:100%;background:#0A0F1A;overflow:hidden}
+.graph-container svg{width:100%;height:100%}
+.graph-controls{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:6px;z-index:10}
+.graph-ctrl-btn{padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(10,15,26,0.8);color:#fff;font-size:10px;font-weight:500;cursor:pointer;font-family:'Libre Franklin',sans-serif;backdrop-filter:blur(8px)}
+.graph-ctrl-btn:hover{background:rgba(0,122,110,0.3);border-color:#007A6E}
+.graph-info{position:absolute;top:10px;right:10px;text-align:right;z-index:10;pointer-events:none}
+.graph-toolbar{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:15}
+.graph-tb-btn{padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(10,15,26,0.85);color:rgba(255,255,255,0.7);font-size:10px;font-weight:500;cursor:pointer;font-family:'Libre Franklin',sans-serif;backdrop-filter:blur(8px);transition:all 0.2s;pointer-events:all}
+.graph-tb-btn:hover{background:rgba(0,122,110,0.3);border-color:#007A6E;color:#fff}
+.graph-tb-btn.active{background:rgba(0,122,110,0.3);border-color:#007A6E;color:#10B981}
+.graph-tb-btn.reset{border-color:rgba(185,28,28,0.3);color:rgba(255,100,100,0.7)}
+.graph-tb-btn.reset:hover{background:rgba(185,28,28,0.25);border-color:rgba(185,28,28,0.5);color:#FCA5A5}
+/* Fullscreen mode */
+#ptab-graph.graph-fullscreen{position:fixed!important;inset:0!important;z-index:9999;width:100vw!important;height:100vh!important;max-width:none!important;border-radius:0}
+#ptab-graph.graph-fullscreen .graph-toolbar{top:14px;right:14px}
+#ptab-graph.graph-fullscreen .graph-info{top:44px;right:14px}
+#ptab-graph.graph-fullscreen .demo-steps{max-height:calc(100vh - 60px)}
+#ptab-graph.graph-fullscreen .graph-legend{max-width:500px}
+.graph-info-title{font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.8)}
+.graph-info-counts{display:flex;gap:12px;justify-content:flex-end;margin-top:4px}
+.graph-info-num{font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:#007A6E}
+.graph-info-label{font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase}
+.graph-legend{position:absolute;bottom:44px;right:10px;z-index:10;pointer-events:none;display:flex;flex-wrap:wrap;gap:2px 10px;max-width:320px;justify-content:flex-end}
+.graph-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:rgba(255,255,255,0.45)}
+.graph-legend-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.graph-event-feed{position:absolute;bottom:0;left:0;right:0;height:36px;background:rgba(10,15,26,0.9);border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;padding:0 10px;gap:10px;overflow-x:auto;z-index:10;font-size:9px;font-family:'DM Mono',monospace}
+
+/* Demo Steps */
+.demo-steps{position:absolute;top:10px;left:10px;z-index:10;display:flex;flex-direction:column;gap:4px;max-height:calc(100% - 60px);overflow-y:auto}
+.demo-steps::-webkit-scrollbar{width:3px}
+.demo-steps::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.demo-step-btn{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(10,15,26,0.85);color:rgba(255,255,255,0.7);font-size:11px;font-weight:500;cursor:pointer;font-family:'Libre Franklin',sans-serif;backdrop-filter:blur(8px);transition:all 0.2s;white-space:nowrap}
+.demo-step-btn:hover{background:rgba(0,122,110,0.25);border-color:rgba(0,122,110,0.5);color:#fff}
+.demo-step-btn.done{border-color:rgba(0,122,110,0.4);background:rgba(0,122,110,0.1);color:rgba(0,122,110,0.8)}
+.demo-step-btn.done .demo-step-icon{opacity:0.5}
+.demo-step-btn.active{border-color:#007A6E;background:rgba(0,122,110,0.3);color:#fff;animation:stepPulse 1s ease}
+@keyframes stepPulse{0%{box-shadow:0 0 0 0 rgba(0,122,110,0.4)}100%{box-shadow:0 0 0 8px rgba(0,122,110,0)}}
+.demo-step-icon{font-size:14px;flex-shrink:0}
+.demo-step-label{display:flex;flex-direction:column;gap:1px}
+.demo-step-title{font-weight:600;font-size:11px}
+.demo-step-desc{font-size:8px;color:rgba(255,255,255,0.35);font-weight:400}
+.demo-month-badge{padding:5px 10px;border-radius:6px;background:rgba(0,122,110,0.2);border:1px solid rgba(0,122,110,0.4);color:#10B981;font-size:10px;font-weight:600;text-align:center;margin-bottom:4px;font-family:'Libre Franklin',sans-serif}
+.demo-group-label{font-size:8px;font-weight:600;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;padding:6px 4px 2px;margin-top:2px}
+.demo-press-count{min-width:18px;height:18px;border-radius:9px;background:rgba(0,122,110,0.3);color:#10B981;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0}
+.demo-step-btn.repeatable{border-left:2px solid rgba(0,122,110,0.4)}
+.demo-step-btn.repeatable:hover .demo-press-count{background:rgba(0,122,110,0.5)}
+.demo-reset-btn{padding:6px 12px;border-radius:6px;border:1px solid rgba(185,28,28,0.3);background:rgba(185,28,28,0.1);color:rgba(255,255,255,0.5);font-size:9px;cursor:pointer;font-family:'Libre Franklin',sans-serif;transition:all 0.2s;text-align:center;margin-top:4px}
+.demo-reset-btn:hover{background:rgba(185,28,28,0.25);color:#FCA5A5;border-color:rgba(185,28,28,0.5)}
+.graph-event-feed::-webkit-scrollbar{height:0}
+.graph-event-time{color:rgba(255,255,255,0.3)}
+.graph-event-text{margin-left:4px;white-space:nowrap}
+.graph-tooltip{position:fixed;background:rgba(10,15,26,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;z-index:100;max-width:260px;display:none;backdrop-filter:blur(8px);color:#fff}
+
+/* Graph modals */
+.graph-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:none;align-items:center;justify-content:center}
+.graph-modal-overlay.active{display:flex}
+.graph-modal{background:#1A2332;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:16px;width:300px;color:#fff}
+.graph-modal h3{font-size:13px;margin-bottom:10px}
+.graph-modal input,.graph-modal select,.graph-modal textarea{width:100%;padding:7px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:6px;background:rgba(255,255,255,0.05);color:#fff;font-family:'Libre Franklin',sans-serif;font-size:11px;margin-bottom:6px;outline:none}
+.graph-modal-btns{display:flex;gap:6px;margin-top:8px}
+.graph-modal-btn{flex:1;padding:7px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Libre Franklin',sans-serif}
+.graph-modal-btn.primary{background:#007A6E;color:#fff}
+.graph-modal-btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.15);color:#fff}
+.graph-response{position:absolute;top:50%;right:10px;transform:translateY(-50%);background:rgba(10,15,26,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:12px 16px;max-width:260px;z-index:150;display:none;color:#fff;font-size:11px}
+.graph-response-title{font-weight:600;color:#007A6E;margin-bottom:6px}
+.graph-response-close{position:absolute;top:6px;right:8px;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer}
+
+/* ===== Testing Tab ===== */
+.testing-content{padding:16px;color:var(--text)}
+.testing-content .section{margin-bottom:16px}
+.testing-content .section-title{font-size:12px;font-weight:600;color:#fff;margin-bottom:8px;padding:0;display:flex;align-items:center;gap:6px}
+.testing-content .section-badge{font-size:9px;color:#8E99A4;font-weight:400}
+.testing-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trig-card{background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid #2A3342;padding:10px;cursor:pointer;transition:all 0.2s}
+.trig-card:hover{border-color:#007A6E;transform:translateY(-1px)}
+.trig-card.active{border-color:#003B5C;background:rgba(0,122,110,0.08)}
+.trig-icon{font-size:16px;margin-bottom:4px}
+.trig-title{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
+.trig-desc{font-size:9px;color:#8E99A4}
+.trig-result{margin-top:6px;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;color:#8E99A4;display:none;line-height:1.4;max-height:80px;overflow-y:auto}
+.trig-result.visible{display:block}
+.v-inline{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700}
+.v-BLOCK{background:rgba(185,28,28,0.15);color:#B91C1C}.v-FLAG{background:rgba(194,87,26,0.15);color:#C2571A}
+.v-ALERT{background:rgba(198,138,14,0.15);color:#C68A0E}.v-SAFE{background:rgba(46,125,111,0.15);color:#2E7D6F}
+.live-card{background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid #2A3342;padding:12px;margin-bottom:10px}
+.live-title{font-size:12px;font-weight:600;color:#fff;margin-bottom:8px}
+.live-input{width:100%;padding:7px 10px;border:1px solid #2A3342;border-radius:6px;font-size:11px;font-family:'Libre Franklin',sans-serif;margin-bottom:6px;outline:none;background:rgba(255,255,255,0.05);color:#fff}
+.live-input:focus{border-color:#007A6E}
+.live-btn{padding:8px;border-radius:6px;background:#003B5C;color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Libre Franklin',sans-serif;width:100%}
+.live-btn:hover{background:#004d75}
+.live-result{margin-top:8px;font-size:10px;color:#8E99A4;line-height:1.5}
+
+@keyframes nodePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+/* ===== Simulator Controls ===== */
+.sim-bar{position:absolute;bottom:36px;left:0;right:0;z-index:20;display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(10,15,26,0.92);border-top:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(12px)}
+.sim-status{display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(255,255,255,0.5);font-family:'DM Mono',monospace;white-space:nowrap}
+.sim-dot{width:8px;height:8px;border-radius:50%;background:#3B4252;flex-shrink:0;transition:background 0.3s}
+.sim-dot.running{background:#10B981;animation:pulse 1s infinite}
+.sim-dot.paused{background:#F59E0B}
+.sim-play{padding:5px 14px;border-radius:6px;border:1px solid rgba(0,122,110,0.5);background:rgba(0,122,110,0.2);color:#10B981;font-size:10px;font-weight:600;cursor:pointer;font-family:'Libre Franklin',sans-serif;transition:all 0.2s;white-space:nowrap}
+.sim-play:hover{background:rgba(0,122,110,0.4);border-color:#10B981}
+.sim-play.stop{border-color:rgba(185,28,28,0.5);background:rgba(185,28,28,0.2);color:#FCA5A5}
+.sim-play.stop:hover{background:rgba(185,28,28,0.35)}
+.sim-speed{display:flex;gap:2px}
+.sim-speed-btn{padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);font-size:9px;cursor:pointer;font-family:'DM Mono',monospace;transition:all 0.15s}
+.sim-speed-btn:hover{border-color:rgba(255,255,255,0.3);color:#fff}
+.sim-speed-btn.active{border-color:rgba(0,122,110,0.6);background:rgba(0,122,110,0.2);color:#10B981}
+.sim-month{font-size:10px;color:rgba(255,255,255,0.6);font-weight:600;margin-left:auto;white-space:nowrap}
+.sim-progress{flex:1;min-width:60px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.sim-progress-fill{height:100%;background:#007A6E;border-radius:2px;transition:width 0.3s;width:0%}
+
+/* ===== Health Score Ring ===== */
+.health-widget{background:rgba(255,255,255,0.03);border:1px solid #2A3342;border-radius:12px;padding:16px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden}
+.health-widget::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%, rgba(0,122,110,0.06) 0%, transparent 60%);pointer-events:none}
+.health-ring-container{position:relative;width:120px;height:120px;margin:0 auto 12px}
+.health-ring{transform:rotate(-90deg)}
+.health-ring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:8}
+.health-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease,stroke 0.5s}
+.health-score-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.health-score-num{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;color:#fff;line-height:1}
+.health-score-grade{font-size:12px;font-weight:700;color:#007A6E;margin-top:2px}
+.health-score-label{font-size:9px;color:rgba(255,255,255,0.4);margin-top:1px}
+.health-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left}
+.health-factor{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.02)}
+.health-factor-bar{width:24px;height:4px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden;flex-shrink:0}
+.health-factor-fill{height:100%;border-radius:2px;transition:width 1s}
+.health-factor-name{font-size:9px;color:rgba(255,255,255,0.5);flex:1}
+.health-factor-val{font-size:9px;font-weight:600;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.7)}
+
+/* ===== Insights Feed ===== */
+.insights-panel{background:rgba(255,255,255,0.03);border:1px solid #2A3342;border-radius:12px;padding:14px;margin-bottom:12px}
+.insight-card{display:flex;gap:10px;padding:8px;border-radius:8px;margin-bottom:6px;border-left:3px solid;transition:all 0.2s;animation:slideIn 0.4s ease}
+.insight-card:last-child{margin-bottom:0}
+.insight-card.severity-critical{border-left-color:#B91C1C;background:rgba(185,28,28,0.06)}
+.insight-card.severity-warning{border-left-color:#C68A0E;background:rgba(198,138,14,0.06)}
+.insight-card.severity-info{border-left-color:#007A6E;background:rgba(0,122,110,0.06)}
+.insight-icon{font-size:18px;flex-shrink:0;line-height:1}
+.insight-body{flex:1;min-width:0}
+.insight-title{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
+.insight-text{font-size:10px;color:rgba(255,255,255,0.5);line-height:1.4}
+
+/* ===== Loan Panel ===== */
+.loan-panel{background:rgba(255,255,255,0.03);border:1px solid #2A3342;border-radius:12px;padding:14px;margin-bottom:12px}
+.loan-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.loan-input{padding:8px 10px;border:1px solid #2A3342;border-radius:6px;background:rgba(255,255,255,0.05);color:#fff;font-size:11px;font-family:'Libre Franklin',sans-serif;outline:none}
+.loan-input:focus{border-color:#007A6E}
+.loan-input.full{grid-column:1/-1}
+.loan-check-btn{grid-column:1/-1;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#003B5C,#007A6E);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:'Libre Franklin',sans-serif;transition:all 0.2s}
+.loan-check-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,122,110,0.3)}
+.loan-result{border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;display:none}
+.loan-result.visible{display:block}
+.loan-verdict{text-align:center;margin-bottom:12px}
+.loan-verdict-badge{display:inline-block;padding:6px 18px;border-radius:20px;font-size:14px;font-weight:700}
+.loan-verdict-badge.APPROVED{background:rgba(0,122,110,0.15);color:#10B981}
+.loan-verdict-badge.CONDITIONAL{background:rgba(198,138,14,0.15);color:#F59E0B}
+.loan-verdict-badge.DECLINED{background:rgba(185,28,28,0.15);color:#F87171}
+.loan-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.loan-stat{text-align:center;padding:8px;border-radius:6px;background:rgba(255,255,255,0.03)}
+.loan-stat-val{font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:#fff}
+.loan-stat-label{font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-top:2px}
+.loan-factors{display:flex;flex-direction:column;gap:4px}
+.loan-factor{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:4px;font-size:10px}
+.loan-factor.positive{background:rgba(0,122,110,0.06);color:#10B981}
+.loan-factor.negative{background:rgba(185,28,28,0.06);color:#F87171}
+.loan-factor.caution{background:rgba(198,138,14,0.06);color:#F59E0B}
+.loan-factor-icon{font-size:12px;flex-shrink:0}
+.loan-factor-text{flex:1;color:rgba(255,255,255,0.6)}
+.loan-factor-detail{font-size:9px;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace}
+
+/* ===== Transfer Panel ===== */
+.transfer-panel{background:rgba(255,255,255,0.03);border:1px solid #2A3342;border-radius:12px;padding:14px;margin-bottom:12px}
+.transfer-accounts{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.transfer-acc{flex:1;padding:10px;border-radius:8px;border:1px solid #2A3342;background:rgba(255,255,255,0.03);text-align:center;cursor:pointer;transition:all 0.2s}
+.transfer-acc:hover{border-color:rgba(0,122,110,0.5)}
+.transfer-acc.selected{border-color:#007A6E;background:rgba(0,122,110,0.1)}
+.transfer-acc-name{font-size:10px;color:rgba(255,255,255,0.5)}
+.transfer-acc-bal{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:#fff;margin-top:2px}
+.transfer-arrow{font-size:18px;color:rgba(255,255,255,0.3);flex-shrink:0}
+.transfer-result{margin-top:10px;padding:10px;border-radius:8px;font-size:11px;display:none}
+.transfer-result.success{display:block;background:rgba(0,122,110,0.1);border:1px solid rgba(0,122,110,0.3);color:#10B981}
+.transfer-result.error{display:block;background:rgba(185,28,28,0.1);border:1px solid rgba(185,28,28,0.3);color:#F87171}
+
+/* ===== Sim Event Toast (floating) ===== */
+.sim-toast{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.sim-toast-item{padding:10px 16px;border-radius:10px;font-size:11px;font-weight:500;color:#fff;backdrop-filter:blur(12px);animation:simToastIn 0.4s ease,simToastOut 0.4s ease 3.6s forwards;max-width:360px;pointer-events:auto;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.sim-toast-item.fraud{background:rgba(185,28,28,0.9);border:1px solid rgba(255,100,100,0.3)}
+.sim-toast-item.alert{background:rgba(198,138,14,0.9);border:1px solid rgba(245,158,11,0.3)}
+.sim-toast-item.insight{background:rgba(0,59,92,0.9);border:1px solid rgba(0,122,110,0.3)}
+.sim-toast-item.phase{background:rgba(26,35,50,0.9);border:1px solid rgba(255,255,255,0.1)}
+@keyframes simToastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes simToastOut{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+
+/* ===== Enhanced Dashboard ===== */
+.dash-hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.dash-live-ticker{background:rgba(0,122,110,0.08);border:1px solid rgba(0,122,110,0.2);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:10px;color:#10B981;overflow:hidden}
+.dash-ticker-label{font-weight:600;white-space:nowrap;flex-shrink:0}
+.dash-ticker-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,0.6)}
+</style>
+</head>
+<body>
+
+<!-- ==================== PHONE ==================== -->
+<div class="phone">
+<div class="status-bar">
+<span>09:41</span><span style="font-weight:700;letter-spacing:1px">SENTIVEST</span><span>87%</span>
+</div>
+<div class="phone-toast" id="phoneToast"><span class="phone-toast-icon"></span><span class="phone-toast-text"></span></div>
+<div class="phone-content" id="phoneContent">
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+<div class="card-carousel" id="cardCarousel"></div>
+<div class="card-dots" id="cardDots"></div>
+<div class="quick-actions">
+<button class="quick-btn" onclick="openVoiceOverlay()"><span class="qb-icon">&#127908;</span>Talk</button>
+<button class="quick-btn" onclick="openVoiceOverlay();setTimeout(()=>voQuickSend('Make a payment'),200)"><span class="qb-icon">&#128179;</span>Pay</button>
+<button class="quick-btn" onclick="showPage('tasks');loadTasks()"><span class="qb-icon">&#9745;</span>Tasks</button>
+<button class="quick-btn" onclick="showPage('budgets');loadBudgets()"><span class="qb-icon">&#128202;</span>Budget</button>
+</div>
+<div class="section-title">Recent Transactions</div>
+<div class="txn-list" id="txnList"></div>
+</div>
+
+<!-- LEDGER -->
+<div class="page" id="page-ledger">
+<div class="budget-header"><div class="budget-title">Transaction Ledger</div></div>
+<div class="ledger-summary" id="ledgerSummary"></div>
+<div class="ledger-filters" id="ledgerFilters">
+<button class="ledger-filter active" onclick="filterLedger('all',this)">All</button>
+<button class="ledger-filter" onclick="filterLedger('in',this)">Income</button>
+<button class="ledger-filter" onclick="filterLedger('out',this)">Expenses</button>
+</div>
+<div class="ledger-list" id="ledgerList"></div>
+</div>
+
+<!-- DETAIL -->
+<div class="page" id="page-detail">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Transaction Detail</div>
+</div>
+<div id="detailContent"></div>
+</div>
+
+<!-- CHAT -->
+<div class="page" id="page-chat" style="display:none;flex-direction:column;height:100%">
+<div class="chat-header">AI Assistant</div>
+<div class="chat-messages" id="chatMessages">
+<div class="msg agent"><div class="msg-label">SENTIVEST</div>I blocked a suspicious R4,500 transaction from UNKNOWN_MERCH_ZW at 02:47. Your card was temporarily frozen.<br><br>Also: your Food Delivery budget is R134 over this week.</div>
+</div>
+<div class="chat-input-area">
+<input class="chat-input" id="chatInput" placeholder="Ask about your finances..." onkeydown="if(event.key==='Enter')sendChat()">
+<button class="chat-send" onclick="sendChat()">&#8594;</button>
+</div>
+</div>
+
+<!-- BUDGETS -->
+<div class="page" id="page-budgets">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Budgets</div>
+<div class="over-badge" id="overBadge" style="margin-left:auto">3 over limit</div>
+</div>
+<div id="budgetList"></div>
+</div>
+
+<!-- ALERTS -->
+<div class="page" id="page-alerts">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Smart Alerts</div>
+<div class="over-badge" style="margin-left:auto;background:var(--red-bg)">2 critical</div>
+</div>
+<div id="alertList"></div>
+</div>
+
+<!-- DOCUMENTS -->
+<div class="page" id="page-docs">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Documents</div>
+</div>
+<div id="docList"></div>
+<div class="doc-tip">Need something else? Try Chat or Voice.</div>
+</div>
+
+<!-- SCANNER -->
+<div class="page" id="page-scan">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Receipt Scanner</div>
+</div>
+<div class="scan-area" id="scanArea" onclick="scanReceipt()">
+<div class="scan-icon">&#128247;</div>
+<div class="scan-text">Tap to scan a receipt</div>
+</div>
+<div id="scanResult"></div>
+</div>
+
+<!-- TASKS -->
+<div class="page" id="page-tasks">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Tasks</div>
+<div class="over-badge" style="margin-left:auto;background:var(--yellow-bg);color:var(--yellow)" id="pendingBadge">4 pending</div>
+</div>
+<div id="taskList"></div>
+</div>
+
+<!-- REPORT -->
+<div class="page" id="page-report">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Weekly Report</div>
+</div>
+<div class="report-stats">
+<div class="rstat-card"><div class="rstat-value">R23,413</div><div class="rstat-label">Total Spend</div></div>
+<div class="rstat-card"><div class="rstat-value" style="color:var(--red)">2</div><div class="rstat-label">Risk Events</div></div>
+<div class="rstat-card"><div class="rstat-value" style="color:var(--green)">62%</div><div class="rstat-label">Savings Rate</div></div>
+<div class="rstat-card"><div class="rstat-value" style="color:var(--red)">1</div><div class="rstat-label">Blocked</div></div>
+</div>
+<div class="section-title">Spending by Category</div>
+<div id="reportBars"></div>
+<div class="section-title" style="margin-top:12px">AI Insights</div>
+<div id="reportInsights"></div>
+</div>
+
+<!-- LIVE TEST -->
+<div class="page" id="page-test">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Live Agent Test</div>
+</div>
+<div class="test-form">
+<input class="test-input" id="testMerchant" placeholder="Merchant name (e.g. Checkers)">
+<input class="test-input" id="testAmount" placeholder="Amount (e.g. 5000)" type="number">
+<input class="test-input" id="testTime" placeholder="Time (e.g. 03:30)" value="12:00">
+<button class="test-btn" onclick="runTest()">Run Analysis</button>
+<div id="testResult" class="test-result"></div>
+</div>
+</div>
+
+<!-- PROFILE / SETTINGS -->
+<div class="page" id="page-profile">
+<div class="detail-header">
+<button class="back-btn" onclick="showPage('home')">&#8592;</button>
+<div class="detail-title">Profile & Memory</div>
+</div>
+<div style="padding:16px;overflow-y:auto;flex:1">
+
+<div class="prof-avatar" id="profAvatar">?</div>
+<div class="prof-name-row">
+<input class="prof-input" id="profName" placeholder="Your name" autocomplete="off">
+<button class="prof-save-btn" onclick="saveProfileName()">Save</button>
+</div>
+
+<div class="prof-section-title">AI Memory</div>
+<div class="prof-facts" id="profFacts"></div>
+<button class="prof-add-btn" onclick="addProfileFact()">+ Add fact</button>
+
+<div class="prof-section-title">Preferences</div>
+<div class="prof-prefs" id="profPrefs"></div>
+
+<div class="prof-section-title">Conversation</div>
+<div class="prof-stat" id="profConvCount">0 messages</div>
+<div class="prof-summary" id="profSummary"></div>
+
+<div style="margin-top:20px;display:flex;gap:8px">
+<button class="prof-danger-btn" onclick="clearAllMemory()">Clear All Memory</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- Bottom Nav (4 tabs) -->
+<div class="bottom-nav">
+<div class="nav-item active" onclick="showPage('home')"><span class="nav-icon">&#127968;</span>Home</div>
+<div class="nav-item" onclick="showPage('ledger');loadLedger()"><span class="nav-icon">&#128203;</span>Ledger</div>
+<div class="nav-item" onclick="showPage('chat')"><span class="nav-icon">&#128172;</span>Chat</div>
+<div class="nav-item" onclick="toggleMoreMenu()"><span class="nav-icon">&#8943;</span>More<span class="more-badge" id="moreBadge" style="display:none"></span></div>
+</div>
+<!-- More menu slide-up -->
+<div class="more-menu" id="moreMenu">
+<div class="more-item" onclick="showPage('budgets');loadBudgets();closeMore()">&#128176; Budgets</div>
+<div class="more-item" onclick="showPage('alerts');loadAlerts();closeMore()">&#128276; Alerts <span class="more-badge-inline" id="alertBadge"></span></div>
+<div class="more-item" onclick="showPage('docs');loadDocs();closeMore()">&#128196; Documents</div>
+<div class="more-item" onclick="showPage('tasks');loadTasks();closeMore()">&#9989; Tasks</div>
+<div class="more-item" onclick="showPage('scan');closeMore()">&#128247; Scan Receipt</div>
+<div class="more-item" onclick="showPage('profile');loadProfile();closeMore()">&#9881; Profile & Memory</div>
+</div>
+
+<!-- Floating Mic FAB -->
+<button class="mic-fab" id="micFab" onclick="openVoiceOverlay()">&#127908;</button>
+
+<!-- Voice Overlay -->
+<div class="voice-overlay" id="voiceOverlay">
+<button class="vo-close" onclick="closeVoiceOverlay()">&#10005;</button>
+<div class="vo-header">
+<div class="vo-header-title">SentiVest AI</div>
+<div class="vo-header-sub">Your personal banking agent</div>
+</div>
+<div class="vo-chat" id="voChat">
+<div class="vo-welcome">
+  Ask me anything about your finances, or tell me to do something.
+  <div class="vo-welcome-actions">
+    <div class="vo-welcome-action" onclick="voQuickAsk(this.textContent.trim())"><span class="wa-icon">💰</span> What's my balance?</div>
+    <div class="vo-welcome-action" onclick="voQuickAsk(this.textContent.trim())"><span class="wa-icon">🔔</span> Any fraud alerts?</div>
+    <div class="vo-welcome-action" onclick="voQuickAsk(this.textContent.trim())"><span class="wa-icon">📊</span> Budget status</div>
+    <div class="vo-welcome-action" onclick="voQuickAsk(this.textContent.trim())"><span class="wa-icon">📄</span> Download statement</div>
+    <div class="vo-welcome-action" onclick="voQuickAsk(this.textContent.trim())"><span class="wa-icon">💡</span> How can I save more?</div>
+    <div class="vo-welcome-action" onclick="voQuickAsk(this.textContent.trim())"><span class="wa-icon">💳</span> Pay R500 to Mom</div>
+  </div>
+</div>
+</div>
+<div class="vo-bottom">
+<div class="vo-recording" id="voRecording" style="display:none">
+<div class="vo-rec-dot"></div>
+<div class="vo-rec-text">Listening</div>
+<div class="vo-waveform" id="voWaveform"></div>
+<div class="vo-rec-time" id="voRecTime">0s</div>
+</div>
+<div class="vo-input-row">
+<button class="vo-mic-mini" id="voMicBtn" onclick="toggleMic()" title="Tap to speak">&#127908;</button>
+<input class="vo-text-input" id="voTextInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')submitVoiceText()">
+<button class="vo-text-send" onclick="submitVoiceText()">&#8594;</button>
+</div>
+<div class="vo-chips" id="voChips"></div>
+</div>
+</div>
+</div>
+
+<!-- ==================== RIGHT PANEL ==================== -->
+<div class="right-panel">
+<div class="panel-tabs">
+<div class="panel-tab active" onclick="showPanelTab('audit')">Audit Log</div>
+<div class="panel-tab" onclick="showPanelTab('dashboard')">Command</div>
+<div class="panel-tab" onclick="showPanelTab('graph')">Graph</div>
+<div class="panel-tab" onclick="showPanelTab('testing')">Testing</div>
+</div>
+<div class="panel-content">
+
+<!-- AUDIT LOG TAB -->
+<div class="panel-page active" id="ptab-audit" style="display:flex;flex-direction:column">
+<div class="audit-header">
+<div class="adot r"></div><div class="adot y"></div><div class="adot g"></div>
+<div class="audit-title">sentivest &mdash; audit.log</div>
+<div class="live-badge"><div class="live-dot"></div>LIVE</div>
+</div>
+<div class="audit-log" id="auditLog" style="flex:1">
+<div class="log-entry log-system">[--:--:--] SYS &#8594; Initializing SentiVest v1.0...</div>
+<div class="log-entry log-info">[--:--:--] API &#8594; Connecting to Investec Sandbox...</div>
+<div class="log-entry log-safe">[--:--:--] KG  &#8594; Knowledge graph ready (1 node, 0 edges)</div>
+<div class="log-entry log-system">[--:--:--] SYS &#8594; All systems operational</div>
+</div>
+</div>
+
+<!-- DASHBOARD TAB -->
+<div class="panel-page" id="ptab-dashboard">
+<div class="dash-content">
+<!-- Live Ticker -->
+<div class="dash-live-ticker" id="dashTicker" style="display:none">
+<div class="live-dot"></div>
+<div class="dash-ticker-label">SIM LIVE</div>
+<div class="dash-ticker-text" id="dashTickerText">Simulator running...</div>
+</div>
+
+<!-- Stats Row -->
+<div class="dash-stats">
+<div class="dash-stat"><div class="dash-stat-label">KG Nodes</div><div class="dash-stat-value" id="dStatNodes">0</div></div>
+<div class="dash-stat"><div class="dash-stat-label">Transactions</div><div class="dash-stat-value" id="dStatTxns">0</div></div>
+<div class="dash-stat"><div class="dash-stat-label">Active Alerts</div><div class="dash-stat-value" id="dStatAlerts">0</div></div>
+<div class="dash-stat"><div class="dash-stat-label">Months Sim'd</div><div class="dash-stat-value" id="dStatMonths">0</div></div>
+</div>
+
+<!-- Health Score + Loan side by side -->
+<div class="dash-hero">
+<!-- Health Score Widget -->
+<div class="health-widget" id="healthWidget">
+<div class="health-ring-container">
+<svg class="health-ring" viewBox="0 0 120 120" width="120" height="120">
+<circle class="health-ring-bg" cx="60" cy="60" r="50"/>
+<circle class="health-ring-fill" id="healthRingFill" cx="60" cy="60" r="50" stroke="#007A6E" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+</svg>
+<div class="health-score-text">
+<div class="health-score-num" id="healthNum">--</div>
+<div class="health-score-grade" id="healthGrade">-</div>
+<div class="health-score-label">HEALTH</div>
+</div>
+</div>
+<div class="health-breakdown" id="healthBreakdown"></div>
+</div>
+
+<!-- Loan Eligibility -->
+<div class="loan-panel">
+<div class="dash-panel-title">Loan Eligibility Check</div>
+<div class="loan-form">
+<input class="loan-input" id="loanAmount" type="number" placeholder="Amount (e.g. 100000)" value="100000">
+<select class="loan-input" id="loanType">
+<option value="personal">Personal</option>
+<option value="vehicle">Vehicle</option>
+<option value="mortgage">Mortgage</option>
+<option value="education">Education</option>
+</select>
+<input class="loan-input" id="loanTerm" type="number" placeholder="Term (months)" value="60">
+<button class="loan-check-btn" onclick="checkLoan()">Check Eligibility</button>
+</div>
+<div class="loan-result" id="loanResult"></div>
+</div>
+</div>
+
+<!-- Proactive AI Insights -->
+<div class="insights-panel">
+<div class="dash-panel-title">AI Insights <span style="font-size:9px;color:#10B981;font-weight:400;margin-left:6px" id="insightCount"></span></div>
+<div id="insightsList">
+<div style="font-size:10px;color:rgba(255,255,255,0.3);padding:8px;text-align:center">Run simulator or seed data to generate insights</div>
+</div>
+</div>
+
+<!-- Smart Transfer -->
+<div class="transfer-panel">
+<div class="dash-panel-title">Smart Transfer</div>
+<div class="transfer-accounts" id="transferAccounts"></div>
+<div style="display:flex;gap:8px">
+<input class="loan-input" id="transferAmount" type="number" placeholder="Amount" style="flex:1">
+<input class="loan-input" id="transferRef" placeholder="Reference" style="flex:1">
+</div>
+<button class="loan-check-btn" onclick="doTransfer()" style="margin-top:8px;width:100%">Transfer</button>
+<div class="transfer-result" id="transferResult"></div>
+</div>
+
+<!-- Spending Chart -->
+<div class="dash-panel"><div class="dash-panel-title">Spending by Category</div><div id="dashSpendBars"></div></div>
+</div>
+</div>
+
+<!-- GRAPH TAB -->
+<div class="panel-page" id="ptab-graph">
+<div class="graph-container">
+<svg id="graphSvg"></svg>
+<div class="demo-steps" id="demoSteps">
+<div class="demo-month-badge" id="demoMonthBadge">Month 0 &middot; March 2025</div>
+<div class="demo-group-label">Monthly Cycle</div>
+<button class="demo-step-btn repeatable" data-step="salary" data-repeatable="true" onclick="runDemoStep(this)"><span class="demo-step-icon">💰</span><span class="demo-step-label"><span class="demo-step-title">Receive Salary</span><span class="demo-step-desc">R42,500 + freelance</span></span><span class="demo-press-count" id="press-salary">0</span></button>
+<button class="demo-step-btn repeatable" data-step="debit_orders" data-repeatable="true" onclick="runDemoStep(this)"><span class="demo-step-icon">🏦</span><span class="demo-step-label"><span class="demo-step-title">Debit Orders</span><span class="demo-step-desc">Insurance, loans, telecom</span></span><span class="demo-press-count" id="press-debit_orders">0</span></button>
+<button class="demo-step-btn repeatable" data-step="daily_spending" data-repeatable="true" onclick="runDemoStep(this)"><span class="demo-step-icon">🛒</span><span class="demo-step-label"><span class="demo-step-title">Daily Spending</span><span class="demo-step-desc">Varies each month</span></span><span class="demo-press-count" id="press-daily_spending">0</span></button>
+<button class="demo-step-btn repeatable" data-step="food_delivery" data-repeatable="true" onclick="runDemoStep(this)"><span class="demo-step-icon">🍔</span><span class="demo-step-label"><span class="demo-step-title">Food Delivery</span><span class="demo-step-desc">Orders escalate monthly</span></span><span class="demo-press-count" id="press-food_delivery">0</span></button>
+<div class="demo-group-label">Life Events</div>
+<button class="demo-step-btn" data-step="suspicious" onclick="runDemoStep(this)"><span class="demo-step-icon">🚨</span><span class="demo-step-label"><span class="demo-step-title">Suspicious Txn</span><span class="demo-step-desc">Fraud blocked</span></span></button>
+<button class="demo-step-btn" data-step="bonus" onclick="runDemoStep(this)"><span class="demo-step-icon">🎉</span><span class="demo-step-label"><span class="demo-step-title">Bonus Season</span><span class="demo-step-desc">13th cheque</span></span></button>
+<button class="demo-step-btn" data-step="emergency" onclick="runDemoStep(this)"><span class="demo-step-icon">🚑</span><span class="demo-step-label"><span class="demo-step-title">Emergency</span><span class="demo-step-desc">Burst pipe / medical</span></span></button>
+<button class="demo-step-btn" data-step="tax_refund" onclick="runDemoStep(this)"><span class="demo-step-icon">🧾</span><span class="demo-step-label"><span class="demo-step-title">Tax Refund</span><span class="demo-step-desc">SARS R12,400</span></span></button>
+<button class="demo-step-btn" data-step="salary_increase" onclick="runDemoStep(this)"><span class="demo-step-icon">📈</span><span class="demo-step-label"><span class="demo-step-title">Promotion</span><span class="demo-step-desc">R42.5K → R55K</span></span></button>
+<button class="demo-step-btn" data-step="international_trip" onclick="runDemoStep(this)"><span class="demo-step-icon">✈️</span><span class="demo-step-label"><span class="demo-step-title">Int'l Trip</span><span class="demo-step-desc">EUR/GBP forex</span></span></button>
+<button class="demo-step-btn" data-step="car_accident" onclick="runDemoStep(this)"><span class="demo-step-icon">🚗</span><span class="demo-step-label"><span class="demo-step-title">Car Accident</span><span class="demo-step-desc">Insurance claim</span></span></button>
+<div class="demo-group-label">Setup</div>
+<button class="demo-step-btn" data-step="budgets" onclick="runDemoStep(this)"><span class="demo-step-icon">📊</span><span class="demo-step-label"><span class="demo-step-title">Set Budgets</span><span class="demo-step-desc">Spending limits</span></span></button>
+<button class="demo-step-btn" data-step="investments" onclick="runDemoStep(this)"><span class="demo-step-icon">📈</span><span class="demo-step-label"><span class="demo-step-title">Portfolio & Tax</span><span class="demo-step-desc">Investments + tax</span></span></button>
+<button class="demo-step-btn" data-step="goals" onclick="runDemoStep(this)"><span class="demo-step-icon">🎯</span><span class="demo-step-label"><span class="demo-step-title">Financial Goals</span><span class="demo-step-desc">AI predictions</span></span></button>
+<button class="demo-reset-btn" onclick="resetDemo()">Reset All</button>
+</div>
+<div class="graph-toolbar">
+<button class="graph-tb-btn reset" onclick="resetDemo()" title="Reset graph & start from zero">&#x21bb; Reset</button>
+<button class="graph-tb-btn" id="btnFullscreen" onclick="toggleGraphFullscreen()" title="Toggle fullscreen">&#x26F6; Fullscreen</button>
+</div>
+<div class="graph-info" style="top:40px">
+<div class="graph-info-title">KNOWLEDGE GRAPH</div>
+<div class="graph-info-counts">
+<div style="text-align:center"><div class="graph-info-num" id="gNodeCount">1</div><div class="graph-info-label">Nodes</div></div>
+<div style="text-align:center"><div class="graph-info-num" id="gEdgeCount">0</div><div class="graph-info-label">Edges</div></div>
+</div>
+</div>
+<div class="graph-legend" id="gLegend"></div>
+<!-- Simulator Control Bar -->
+<div class="sim-bar" id="simBar">
+<div class="sim-dot" id="simDot"></div>
+<div class="sim-status" id="simStatusText">Idle</div>
+<button class="sim-play" id="simPlayBtn" onclick="toggleSim()">Start Sim</button>
+<div class="sim-speed">
+<button class="sim-speed-btn" onclick="setSimSpeed(0.5)">0.5x</button>
+<button class="sim-speed-btn active" onclick="setSimSpeed(1)">1x</button>
+<button class="sim-speed-btn" onclick="setSimSpeed(2)">2x</button>
+<button class="sim-speed-btn" onclick="setSimSpeed(5)">5x</button>
+</div>
+<div class="sim-progress"><div class="sim-progress-fill" id="simProgress"></div></div>
+<div class="sim-month" id="simMonth">Month 0</div>
+</div>
+<div class="graph-event-feed" id="gEventFeed" style="bottom:72px">
+<div><span class="graph-event-time">--:--</span><span class="graph-event-text" style="color:#007A6E">Graph ready. Start the simulator to watch your financial life unfold.</span></div>
+</div>
+<div class="graph-tooltip" id="gTooltip"></div>
+
+<!-- Graph Modals -->
+<div class="graph-modal-overlay" id="gIngestModal">
+<div class="graph-modal">
+<h3>Ingest Transaction</h3>
+<input id="gIngMerchant" placeholder="Merchant (e.g. Checkers)">
+<input id="gIngAmount" placeholder="Amount (e.g. 850)" type="number">
+<input id="gIngCategory" placeholder="Category (e.g. Groceries)">
+<input id="gIngTime" placeholder="Time (e.g. 14:30)" value="12:00">
+<div class="graph-modal-btns">
+<button class="graph-modal-btn secondary" onclick="gCloseModals()">Cancel</button>
+<button class="graph-modal-btn primary" onclick="gIngestTransaction()">Ingest</button>
+</div>
+</div>
+</div>
+<div class="graph-modal-overlay" id="gQueryModal">
+<div class="graph-modal">
+<h3>Ask the Brain</h3>
+<textarea id="gQueryText" rows="3" placeholder="What do you know about me?"></textarea>
+<div class="graph-modal-btns">
+<button class="graph-modal-btn secondary" onclick="gCloseModals()">Cancel</button>
+<button class="graph-modal-btn primary" onclick="gQueryBrain()">Query</button>
+</div>
+</div>
+</div>
+<div class="graph-modal-overlay" id="gScenarioModal">
+<div class="graph-modal">
+<h3>Run Scenario</h3>
+<select id="gScenarioType">
+<option value="cancel_subscription">Cancel Netflix</option>
+<option value="reduce_spending">Reduce Food Delivery 30%</option>
+<option value="emergency_fund">Emergency Fund (3 months)</option>
+<option value="savings_goal">Save R3,000/month</option>
+</select>
+<div class="graph-modal-btns">
+<button class="graph-modal-btn secondary" onclick="gCloseModals()">Cancel</button>
+<button class="graph-modal-btn primary" onclick="gRunScenario()">Run</button>
+</div>
+</div>
+</div>
+<div class="graph-response" id="gResponse">
+<button class="graph-response-close" onclick="document.getElementById('gResponse').style.display='none'">&#10005;</button>
+<div class="graph-response-title" id="gResponseTitle"></div>
+<div id="gResponseText"></div>
+</div>
+</div>
+</div>
+
+<!-- TESTING TAB -->
+<div class="panel-page" id="ptab-testing">
+<div class="testing-content">
+<div class="section">
+<div class="section-title">Transaction Analysis <span class="section-badge">6 triggers</span></div>
+<div class="testing-grid">
+<div class="trig-card" onclick="tTrigClassify(this,'Woolworths Food',847.30,'08:12')"><div class="trig-icon">&#128722;</div><div class="trig-title">Safe: Woolworths R847</div><div class="trig-desc">Known merchant, normal hours</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigClassify(this,'UNKNOWN_MERCH_ZW',4500,'02:47')"><div class="trig-icon">&#128680;</div><div class="trig-title">Fraud: Unknown R4,500</div><div class="trig-desc">Unknown, late night, Zimbabwe</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigClassify(this,'Takealot.com',12399,'14:22')"><div class="trig-icon">&#128717;</div><div class="trig-title">High: Takealot R12,399</div><div class="trig-desc">8.3x average spend</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigClassify(this,'Netflix SA',299,'00:01')"><div class="trig-icon">&#128250;</div><div class="trig-title">Sub: Netflix R299</div><div class="trig-desc">Recurring subscription</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigClassify(this,'City Power Joburg',2847,'06:00')"><div class="trig-icon">&#9889;</div><div class="trig-title">Utility: City Power R2,847</div><div class="trig-desc">Above average bill</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigClassify(this,'Engen QuickShop',156.80,'07:30')"><div class="trig-icon">&#127978;</div><div class="trig-title">Routine: Engen R157</div><div class="trig-desc">Small known merchant</div><div class="trig-result"></div></div>
+</div>
+</div>
+<div class="section">
+<div class="section-title">Voice &amp; Agent <span class="section-badge">18 triggers</span></div>
+<div class="testing-grid">
+<div class="trig-card" onclick="tTrigVoice(this,'What is my balance?')"><div class="trig-icon">&#128176;</div><div class="trig-title">Voice: Balance</div><div class="trig-desc">"What's my balance?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Switch to savings account')"><div class="trig-icon">&#128179;</div><div class="trig-title">Switch to Savings</div><div class="trig-desc">Switch active account</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Total balance all accounts')"><div class="trig-icon">&#128200;</div><div class="trig-title">Total Balance</div><div class="trig-desc">Combined across accounts</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Can I afford R5000 a month?')"><div class="trig-icon">&#128178;</div><div class="trig-title">Affordability</div><div class="trig-desc">"Can I afford R5,000/mo?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Any suspicious activity?')"><div class="trig-icon">&#128274;</div><div class="trig-title">Voice: Fraud Check</div><div class="trig-desc">"Any suspicious activity?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Where am I spending most?')"><div class="trig-icon">&#128202;</div><div class="trig-title">Voice: Spending</div><div class="trig-desc">"Where am I spending most?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Am I eligible for a R100000 personal loan?')"><div class="trig-icon">&#127974;</div><div class="trig-title">Loan Eligibility</div><div class="trig-desc">"Am I eligible for R100K?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'What is my financial health score?')"><div class="trig-icon">&#128153;</div><div class="trig-title">Health Score</div><div class="trig-desc">"My health score?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Transfer R5000 to savings')"><div class="trig-icon">&#128184;</div><div class="trig-title">Smart Transfer</div><div class="trig-desc">"Transfer R5K to savings"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Compare this month to last month')"><div class="trig-icon">&#128200;</div><div class="trig-title">Compare Months</div><div class="trig-desc">"Compare months"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Start the simulator')"><div class="trig-icon">&#9654;</div><div class="trig-title">Start Simulator</div><div class="trig-desc">"Start the simulation"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Stop simulation')"><div class="trig-icon">&#9632;</div><div class="trig-title">Stop Simulator</div><div class="trig-desc">"Stop the simulation"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigTask(this,'Review unusual Takealot spending of R12,399','high')"><div class="trig-icon">&#128203;</div><div class="trig-title">Create Task</div><div class="trig-desc">Review task for Takealot</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigChat(this,'How can I save money?')"><div class="trig-icon">&#128172;</div><div class="trig-title">AI Chat</div><div class="trig-desc">"How can I save money?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigChat(this,'What recurring payments do I have?')"><div class="trig-icon">&#128257;</div><div class="trig-title">Chat: Recurring</div><div class="trig-desc">"What recurring payments?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Pay R500 to Mom')"><div class="trig-icon">&#128179;</div><div class="trig-title">Pay Beneficiary</div><div class="trig-desc">"Pay R500 to Mom"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Pay Thandi')"><div class="trig-icon">&#128269;</div><div class="trig-title">Pay: Disambiguate</div><div class="trig-desc">"Pay Thandi" (2 matches)</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigVoice(this,'Show my beneficiaries')"><div class="trig-icon">&#128101;</div><div class="trig-title">Beneficiary List</div><div class="trig-desc">"My beneficiaries"</div><div class="trig-result"></div></div>
+</div>
+</div>
+<div class="section">
+<div class="section-title">Knowledge Graph <span class="section-badge">6 triggers</span></div>
+<div class="testing-grid">
+<div class="trig-card" onclick="tTrigSeed(this)"><div class="trig-icon">&#9889;</div><div class="trig-title">Seed Graph</div><div class="trig-desc">Load demo data</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigQuery(this,'What patterns do you see?')"><div class="trig-icon">&#128260;</div><div class="trig-title">Query: Patterns</div><div class="trig-desc">"What patterns?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigQuery(this,'What are your predictions?')"><div class="trig-icon">&#128302;</div><div class="trig-title">Query: Predictions</div><div class="trig-desc">"What predictions?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigQuery(this,'How can I save money?')"><div class="trig-icon">&#128181;</div><div class="trig-title">Query: Savings</div><div class="trig-desc">"How to save?"</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigScenario(this,'cancel_subscription',{merchant:'Netflix SA'})"><div class="trig-icon">&#128250;</div><div class="trig-title">Cancel Netflix</div><div class="trig-desc">What-if scenario</div><div class="trig-result"></div></div>
+<div class="trig-card" onclick="tTrigScenario(this,'emergency_fund',{months:3})"><div class="trig-icon">&#127974;</div><div class="trig-title">Emergency Fund</div><div class="trig-desc">3 months coverage</div><div class="trig-result"></div></div>
+</div>
+</div>
+<div class="section">
+<div class="section-title">Live Audience <span class="section-badge">2 interactive</span></div>
+<div class="live-card">
+<div class="live-title">Custom Transaction</div>
+<input class="live-input" id="tLiveMerchant" placeholder="Merchant name">
+<input class="live-input" id="tLiveAmount" placeholder="Amount" type="number">
+<input class="live-input" id="tLiveTime" placeholder="Time (e.g. 03:30)" value="12:00">
+<button class="live-btn" onclick="tLiveClassify()">Run Analysis</button>
+<div class="live-result" id="tLiveClassifyResult"></div>
+</div>
+<div class="live-card">
+<div class="live-title">Ask the Brain</div>
+<textarea class="live-input" id="tLiveQuery" placeholder="Ask anything..." rows="2" style="resize:none"></textarea>
+<button class="live-btn" onclick="tLiveQuery()">Query Graph</button>
+<div class="live-result" id="tLiveQueryResult"></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Simulator floating toasts -->
+<div class="sim-toast" id="simToastContainer"></div>
+
+<script>
+const API = '';
+let ws;
+let cardFrozen = false;
+let simRunning = false;
+let simSpeed = 1.0;
+
+// ==================== WEBSOCKET ====================
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}/ws`);
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'graph_update') {
+        handleGraphUpdate(msg);
+        if (msg.accounts) {
+          phoneAccounts = msg.accounts;
+          activeAccountId = (phoneAccounts.find(a => a.active) || {}).id || activeAccountId;
+          renderCards();
+        } else if (msg.balance) {
+          phoneSetBalance(msg.balance.currentBalance);
+        }
+        return;
+      }
+      // Simulator events
+      if (msg.type === 'sim_phase') {
+        handleSimPhase(msg);
+        return;
+      }
+      if (msg.type === 'sim_alert') {
+        handleSimAlert(msg);
+        return;
+      }
+      if (msg.type === 'sim_insights') {
+        handleSimInsights(msg);
+        return;
+      }
+      if (msg.type === 'health_score') {
+        renderHealthScore(msg.health);
+        return;
+      }
+      addLog(msg.type || 'info', msg.text || JSON.stringify(msg));
+    } catch(err) {}
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+  ws.onerror = () => {};
+}
+connectWS();
+
+// ==================== AUDIT LOG ====================
+function addLog(type, text) {
+  const log = document.getElementById('auditLog');
+  const time = new Date().toTimeString().slice(0, 8);
+  const prefixes = {system:'SYS',info:'API',process:'AGT',action:'ACT',safe:'\u2713  ',warning:'\u26A0  ',critical:'\uD83D\uDEA8 '};
+  const entry = document.createElement('div');
+  entry.className = `log-entry log-${type}`;
+  entry.textContent = `[${time}] ${prefixes[type]||'LOG'} \u2192 ${text}`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ==================== PHONE NAV ====================
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => {p.classList.remove('active');p.style.display='none'});
+  const el = document.getElementById('page-' + page);
+  if (el) {el.classList.add('active');el.style.display=page==='chat'?'flex':'block'}
+  // Highlight nav: Home, Ledger, Chat are direct tabs; everything else highlights "More"
+  const navPages = ['home','ledger','chat','more'];
+  const morePages = ['budgets','alerts','docs','tasks','scan','report','test','profile'];
+  document.querySelectorAll('.nav-item').forEach((n, i) => {
+    if (navPages[i] === 'more') {
+      n.classList.toggle('active', morePages.includes(page));
+    } else {
+      n.classList.toggle('active', navPages[i] === page);
+    }
+  });
+  addLog('info', `Page: ${page}`);
+}
+
+function toggleMoreMenu() {
+  const menu = document.getElementById('moreMenu');
+  menu.classList.toggle('open');
+}
+function closeMore() {
+  document.getElementById('moreMenu').classList.remove('open');
+}
+// Close more menu when clicking outside
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('moreMenu');
+  if (menu && menu.classList.contains('open') && !e.target.closest('.more-menu') && !e.target.closest('.nav-item')) {
+    menu.classList.remove('open');
+  }
+});
+
+// ==================== RIGHT PANEL TABS ====================
+let graphInitialized = false;
+function showPanelTab(tab) {
+  document.querySelectorAll('.panel-tab').forEach((t, i) => {
+    const tabs = ['audit','dashboard','graph','testing'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.panel-page').forEach(p => {p.classList.remove('active');p.style.display='none'});
+  const el = document.getElementById('ptab-' + tab);
+  if (el) {
+    el.classList.add('active');
+    el.style.display = tab === 'audit' ? 'flex' : 'block';
+  }
+  if (tab === 'graph' && !graphInitialized) { initGraph(); graphInitialized = true; }
+  if (tab === 'dashboard') { loadDashboard(); }
+}
+
+// ==================== TRANSACTIONS ====================
+async function loadTransactions() {
+  try {
+    const res = await fetch(`${API}/api/transactions?limit=15`);
+    const data = await res.json();
+    const list = document.getElementById('txnList');
+    list.innerHTML = '';
+    if (!data.transactions || data.transactions.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:12px">No transactions yet.<br>Use Testing tab to run scenarios.</div>';
+      return;
+    }
+    data.transactions.forEach(txn => {
+      const isIn = txn.direction === 'in';
+      const amt = txn.abs_amount || Math.abs(txn.amount);
+      list.innerHTML += `
+        <div class="txn-item" onclick='showDetail(${JSON.stringify(txn).replace(/'/g,"&#39;")})'>
+          <div class="txn-icon">${txn.icon}</div>
+          <div class="txn-info">
+            <div class="txn-merchant">${txn.merchant}</div>
+            <div class="txn-meta">${txn.category} \u00B7 ${txn.time}</div>
+          </div>
+          <div class="txn-right">
+            <div class="txn-amount" ${isIn?'style="color:var(--green)"':''}>${isIn?'+':'-'}R${amt.toLocaleString('en-ZA',{minimumFractionDigits:2})}</div>
+            ${txn.verdict!=='SAFE'?`<div class="risk-badge risk-${txn.verdict}">${txn.verdict}</div>`:''}
+          </div>
+        </div>`;
+    });
+    addLog('safe', `Loaded ${data.transactions.length} transactions`);
+  } catch(e) { addLog('warning', 'Failed to load transactions'); }
+}
+
+// ==================== MULTI-ACCOUNT CARD CAROUSEL ====================
+let phoneAccounts = [];
+let activeAccountId = null;
+
+async function loadAccounts() {
+  try {
+    const res = await fetch(`${API}/api/kg/accounts`);
+    const data = await res.json();
+    phoneAccounts = data.accounts || [];
+    activeAccountId = (phoneAccounts.find(a => a.active) || {}).id || null;
+    renderCards();
+  } catch(e) { addLog('warning', 'Failed to load accounts'); }
+}
+
+function renderCards() {
+  const carousel = document.getElementById('cardCarousel');
+  const dots = document.getElementById('cardDots');
+  if (!carousel) return;
+  const gradients = {
+    '#003B5C': 'linear-gradient(135deg, #003B5C 0%, #005A7A 50%, #007A6E 100%)',
+    '#007A6E': 'linear-gradient(135deg, #007A6E 0%, #059669 50%, #10B981 100%)',
+    '#6366F1': 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A78BFA 100%)',
+    '#C68A0E': 'linear-gradient(135deg, #C68A0E 0%, #D97706 50%, #F59E0B 100%)',
+  };
+  carousel.innerHTML = phoneAccounts.map(a => {
+    const bg = gradients[a.color] || `linear-gradient(135deg, ${a.color} 0%, #333 100%)`;
+    const isActive = a.id === activeAccountId;
+    const bal = a.balance.toLocaleString('en-ZA', {minimumFractionDigits:2});
+    const last4 = a.last4 || '0000';
+    const frozen = cardFrozen && isActive ? '<div class="bank-card-frozen">FROZEN</div>' : '';
+    return `<div class="bank-card ${isActive?'active':''}" style="background:${bg}" onclick="switchAccount('${a.id}')" data-account="${a.id}">
+      <svg class="card-bg" width="100%" height="100%"><circle cx="220" cy="-20" r="120" fill="white"/><circle cx="-30" cy="180" r="80" fill="white"/></svg>
+      ${frozen}
+      <div class="bank-card-type">${a.type}</div>
+      <div class="bank-card-name">${a.name}</div>
+      <div class="bank-card-number">\u2022\u2022\u2022\u2022  \u2022\u2022\u2022\u2022  \u2022\u2022\u2022\u2022  ${last4}</div>
+      <div class="bank-card-balance">R ${bal}</div>
+      <div class="bank-card-logo">INVESTEC</div>
+    </div>`;
+  }).join('');
+  dots.innerHTML = phoneAccounts.map(a =>
+    `<div class="card-dot ${a.id===activeAccountId?'active':''}"></div>`
+  ).join('');
+  // Scroll active card into view
+  setTimeout(() => {
+    const activeCard = carousel.querySelector('.bank-card.active');
+    if (activeCard) activeCard.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+  }, 50);
+}
+
+async function switchAccount(id) {
+  if (id === activeAccountId) return;
+  try {
+    await fetch(`${API}/api/kg/accounts/switch`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({account_id: id})
+    });
+    activeAccountId = id;
+    phoneAccounts.forEach(a => a.active = a.id === id);
+    renderCards();
+    loadTransactions();
+    addLog('action', `Switched to ${(phoneAccounts.find(a=>a.id===id)||{}).name||id}`);
+  } catch(e) { addLog('warning', 'Failed to switch account'); }
+}
+
+function phoneSetBalance(val) {
+  // Update active card's balance in local state and re-render
+  const acct = phoneAccounts.find(a => a.id === activeAccountId);
+  if (acct) { acct.balance = val; renderCards(); }
+}
+
+async function loadBalance() { return loadAccounts(); }
+
+async function loadLedger(direction) {
+  const url = direction && direction !== 'all'
+    ? `${API}/api/ledger?direction=${direction}`
+    : `${API}/api/ledger`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    // Summary
+    const s = data.summary;
+    document.getElementById('ledgerSummary').innerHTML = `
+      <div class="ledger-stat in">+R${s.total_in.toLocaleString('en-ZA',{maximumFractionDigits:0})}</div>
+      <div class="ledger-stat out">-R${s.total_out.toLocaleString('en-ZA',{maximumFractionDigits:0})}</div>
+      <div class="ledger-stat net">Net R${s.net.toLocaleString('en-ZA',{maximumFractionDigits:0})}</div>`;
+    // List
+    const list = document.getElementById('ledgerList');
+    list.innerHTML = '';
+    data.transactions.forEach(txn => {
+      const isIn = txn.direction === 'in';
+      list.innerHTML += `
+        <div class="ledger-item" onclick='showDetail(${JSON.stringify(txn).replace(/'/g,"&#39;")})'>
+          <div class="ledger-icon">${txn.icon}</div>
+          <div class="ledger-info">
+            <div class="ledger-merchant">${txn.merchant}</div>
+            <div class="ledger-meta">${txn.date} \u00B7 ${txn.time}</div>
+          </div>
+          <div class="ledger-right">
+            <div class="ledger-amount" style="color:${isIn?'var(--green)':'inherit'}">${isIn?'+':'-'}R${txn.abs_amount.toLocaleString('en-ZA',{minimumFractionDigits:2})}</div>
+            <div class="ledger-balance">Bal R${txn.running_balance.toLocaleString('en-ZA',{minimumFractionDigits:2})}</div>
+          </div>
+        </div>`;
+    });
+  } catch(e) { addLog('warning', 'Failed to load ledger'); }
+}
+
+function filterLedger(dir, btn) {
+  document.querySelectorAll('.ledger-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadLedger(dir);
+}
+
+// ==================== TRANSACTION DETAIL ====================
+async function showDetail(txn) {
+  showPage('detail');
+  const c = document.getElementById('detailContent');
+  c.innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-icon">${txn.icon}</div>
+      <div class="detail-amount">R ${txn.amount.toLocaleString('en-ZA',{minimumFractionDigits:2})}</div>
+      <div class="detail-merchant">${txn.merchant}</div>
+      <div class="detail-time">${txn.category} \u00B7 ${txn.time}</div>
+    </div>
+    <div class="spinner">Analyzing with AI agent...</div>`;
+  addLog('process', `Analyzing: ${txn.merchant} R${txn.amount.toLocaleString()}`);
+  setTimeout(async () => {
+    try {
+      const res = await fetch(`${API}/api/classify`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({merchant:txn.merchant,amount:txn.amount,time:txn.time})
+      });
+      const v = await res.json();
+      setTimeout(() => renderVerdict(txn, v), 600);
+    } catch(e) {
+      const v = {verdict:txn.verdict,confidence:txn.confidence,reasoning:`Known merchant ${txn.merchant}. Amount R${txn.amount} is within expected range.`,tags:[txn.category.toLowerCase(),'analyzed'],actions:[],category:txn.category};
+      setTimeout(() => renderVerdict(txn, v), 600);
+    }
+  }, 400);
+}
+
+function renderVerdict(txn, v) {
+  const c = document.getElementById('detailContent');
+  const verdictActions = {
+    BLOCK: [{text:'\uD83D\uDD12 Freeze Card',cls:'danger'},{text:'\uD83D\uDCDE Call Bank',cls:'secondary'}],
+    FLAG: [{text:'\u2705 Approve',cls:'primary'},{text:'\u274C Decline',cls:'danger'}],
+    ALERT: [{text:'\uD83D\uDCCB Review Details',cls:'primary'},{text:'\u2757 Dispute',cls:'secondary'}],
+    SAFE: [{text:'\u2713 Acknowledged',cls:'secondary'}]
+  };
+  const actions = verdictActions[v.verdict] || verdictActions.SAFE;
+  c.innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-icon">${txn.icon}</div>
+      <div class="detail-amount">R ${txn.amount.toLocaleString('en-ZA',{minimumFractionDigits:2})}</div>
+      <div class="detail-merchant">${txn.merchant}</div>
+      <div class="detail-time">${txn.category} \u00B7 ${txn.time}</div>
+    </div>
+    <div style="text-align:center">
+      <div class="verdict-badge verdict-${v.verdict}">${v.verdict} \u00B7 ${(v.confidence*100).toFixed(0)}%</div>
+    </div>
+    <div class="card">
+      <div class="card-label">AI Reasoning</div>
+      <div class="card-text">${v.reasoning || v.ai_reasoning || 'Analysis complete.'}</div>
+    </div>
+    <div class="tags">${(v.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    ${v.budget_check ? `<div class="card"><div class="card-label">Budget Impact</div><div class="card-text">${v.budget_check.category}: R${v.budget_check.spent} / R${v.budget_check.limit} [${v.budget_check.status}]</div></div>` : ''}
+    <div class="action-btns">
+      ${actions.map(a=>`<button class="action-btn ${a.cls}" onclick="handleAction('${v.verdict}','${a.text}')">${a.text}</button>`).join('')}
+    </div>`;
+  addLog(v.verdict==='BLOCK'?'critical':v.verdict==='FLAG'?'warning':'safe',
+    `[${v.verdict}] ${txn.merchant} R${txn.amount} (${(v.confidence*100).toFixed(0)}%)`);
+}
+
+function handleAction(verdict, action) {
+  if (action.includes('Freeze')) {
+    cardFrozen = true;
+    renderCards();
+    addLog('critical', 'Card FROZEN by user');
+  }
+  addLog('action', `User action: ${action}`);
+  showPage('home');
+}
+
+// ==================== CHAT ====================
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div class="msg user">${text}</div>`;
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+  addLog('process', `Chat: "${text}"`);
+  try {
+    const res = await fetch(`${API}/api/chat`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+    const data = await res.json();
+    msgs.innerHTML += `<div class="msg agent"><div class="msg-label">SENTIVEST</div>${data.response}</div>`;
+  } catch(e) {
+    const responses = {
+      balance: 'Your current balance is R34,218.66 with R42,145.23 available.',
+      alert: 'You have 2 critical alerts: Blocked UNKNOWN_MERCH_ZW R4,500, Shopping budget exceeded by R7,399.',
+      budget: '2 budgets over: Food Delivery R634/R500 per week, Shopping R12,399/R5,000 per month.',
+      save: '3 ways to save: Cancel Netflix (R3,588/yr), reduce food delivery 30%, auto-save R3,000/mo.',
+      spend: 'Top spending: Shopping R12,399 (53%), Insurance R6,047, Utilities R2,847.',
+      fraud: 'Blocked R4,500 from UNKNOWN_MERCH_ZW at 02:47. Card frozen.',
+    };
+    const tl = text.toLowerCase();
+    let resp = "I'm SentiVest, your personal financial AI. Balance R34,218.66. Ask me about spending, budgets, or alerts.";
+    for (const [k,v] of Object.entries(responses)) { if (tl.includes(k)) { resp = v; break; } }
+    msgs.innerHTML += `<div class="msg agent"><div class="msg-label">SENTIVEST</div>${resp}</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ==================== VOICE ====================
+let speechMode = 'demo';
+let ttsSupported = 'speechSynthesis' in window;
+
+const VOICE_COMMANDS = [
+  "What's my balance?", "Any suspicious activity?", "How's my food budget?",
+  "Where am I spending most?", "How can I save more?", "Set a food delivery budget",
+  "Download my statement", "Any fraud alerts?", "What's my loan status?",
+  "Am I eligible for a R100,000 loan?", "What's my health score?",
+  "Transfer R5,000 to savings", "Compare this month to last",
+  "Start the simulation", "Stop the simulation",
+  "Total balance across accounts", "Can I afford R8,000 a month?",
+  "Switch to savings account", "Pay R500 to Mom",
+  "Show my beneficiaries", "Pay Thandi R2000"
+];
+
+function voAddMessage(role, text, actionBadge, uiData) {
+  const chat = document.getElementById('voChat');
+  const welcome = chat.querySelector('.vo-welcome');
+  if (welcome) welcome.remove();
+  const bubble = document.createElement('div');
+  bubble.className = `vo-bubble ${role}`;
+  let html = text;
+  if (actionBadge) html += `<div class="vo-action-badge">${actionBadge}</div>`;
+  // Render dynamic UI card if present
+  if (uiData && role === 'ai') html += renderFlowUI(uiData);
+  const now = new Date();
+  html += `<div class="vo-bubble-time">${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}</div>`;
+  bubble.innerHTML = html;
+  // Bind interactive elements after innerHTML
+  if (uiData) bindFlowUI(bubble, uiData);
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function renderFlowUI(ui) {
+  if (!ui || !ui.type) return '';
+  if (ui.type === 'payment_flow') return renderPaymentFlowUI(ui);
+  if (ui.type === 'beneficiary_list') return renderBenListUI(ui);
+  return '';
+}
+
+function renderPaymentFlowUI(ui) {
+  const step = ui.step;
+
+  if (step === 'ask_name' || step === 'not_found') {
+    const bens = ui.beneficiaries || [];
+    let html = '<div class="pay-flow"><div class="pay-flow-header">Select Beneficiary</div><div class="pay-flow-body"><div class="pay-ben-list">';
+    bens.forEach(b => {
+      const initials = b.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const cls = b.type === 'company' ? 'company' : '';
+      html += `<div class="pay-ben-item" data-ben-name="${b.name}"><div class="pay-ben-avatar ${cls}">${initials}</div><div class="pay-ben-info"><div class="pay-ben-name">${b.name}</div><div class="pay-ben-bank">${b.bank} ****${(b.account_number||'').slice(-4)}</div></div></div>`;
+    });
+    html += '</div></div></div>';
+    return html;
+  }
+
+  if (step === 'disambiguate') {
+    const matches = ui.matches || [];
+    let html = '<div class="pay-flow"><div class="pay-flow-header">Which one?</div><div class="pay-flow-body"><div class="pay-ben-list">';
+    matches.forEach((b, i) => {
+      const initials = b.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      html += `<div class="pay-ben-item" data-ben-name="${b.name}"><div class="pay-ben-avatar">${initials}</div><div class="pay-ben-info"><div class="pay-ben-name">${b.name}</div><div class="pay-ben-bank">${b.bank}</div></div></div>`;
+    });
+    html += '</div></div></div>';
+    return html;
+  }
+
+  if (step === 'ask_amount') {
+    const b = ui.beneficiary || {};
+    return `<div class="pay-flow"><div class="pay-flow-header">Payment to ${b.name}</div><div class="pay-flow-body"><input class="pay-amount-input" type="text" placeholder="R 0.00" id="payAmountInput" inputmode="decimal"><button class="pay-btn pay-btn-confirm" onclick="submitPayAmount()">Continue</button></div></div>`;
+  }
+
+  if (step === 'confirm') {
+    const b = ui.beneficiary || {};
+    const amt = ui.amount || 0;
+    const bal = ui.balance || 0;
+    const initials = b.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    return `<div class="pay-flow"><div class="pay-flow-header">Confirm Payment</div><div class="pay-flow-body">
+      <div class="pay-confirm-amount">R ${amt.toLocaleString('en-ZA', {minimumFractionDigits:2})}</div>
+      <div class="pay-confirm-card"><div style="padding:10px 14px">
+        <div class="pay-confirm-row"><span class="pay-confirm-label">To</span><span class="pay-confirm-value">${b.name}</span></div>
+        <div class="pay-confirm-row"><span class="pay-confirm-label">Bank</span><span class="pay-confirm-value">${b.bank||''}</span></div>
+        <div class="pay-confirm-row"><span class="pay-confirm-label">Account</span><span class="pay-confirm-value">****${(b.account_number||'').slice(-4)}</span></div>
+        <div class="pay-confirm-row"><span class="pay-confirm-label">Reference</span><span class="pay-confirm-value">${b.reference||''}</span></div>
+        <div class="pay-confirm-row"><span class="pay-confirm-label">Available</span><span class="pay-confirm-value">R ${bal.toLocaleString('en-ZA', {minimumFractionDigits:2})}</span></div>
+      </div></div>
+      <button class="pay-btn pay-btn-confirm" onclick="voQuickSend('confirm')">Confirm &amp; Pay</button>
+      <button class="pay-btn pay-btn-cancel" onclick="voQuickSend('cancel')">Cancel</button>
+    </div></div>`;
+  }
+
+  if (step === 'success') {
+    const b = ui.beneficiary || {};
+    const amt = ui.amount || 0;
+    return `<div class="pay-flow"><div class="pay-flow-body"><div class="pay-success">
+      <div class="pay-success-icon">&#9989;</div>
+      <div class="pay-success-amount">R ${amt.toLocaleString('en-ZA', {minimumFractionDigits:2})}</div>
+      <div class="pay-success-to">Paid to ${b.name}</div>
+      <div class="pay-success-bal">Ref: ${ui.reference||''} &bull; New balance: R ${(ui.new_balance||0).toLocaleString('en-ZA', {minimumFractionDigits:2})}</div>
+    </div></div></div>`;
+  }
+
+  if (step === 'error') {
+    return `<div class="pay-flow"><div class="pay-flow-body"><div class="pay-error">${ui.error||'Payment failed'}</div></div></div>`;
+  }
+
+  if (step === 'cancelled') {
+    return '<div class="pay-flow"><div class="pay-flow-body" style="text-align:center;padding:12px;color:#64748b;font-size:12px">Payment cancelled</div></div>';
+  }
+
+  return '';
+}
+
+function renderBenListUI(ui) {
+  const bens = ui.beneficiaries || [];
+  let html = '<div class="pay-flow"><div class="pay-flow-header">Your Beneficiaries</div><div class="pay-flow-body"><div class="pay-ben-list">';
+  bens.forEach(b => {
+    const initials = b.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const cls = b.type === 'company' ? 'company' : '';
+    const paid = b.total_paid ? ` &bull; Total paid: R${b.total_paid.toLocaleString()}` : '';
+    html += `<div class="pay-ben-item" data-ben-name="${b.name}"><div class="pay-ben-avatar ${cls}">${initials}</div><div class="pay-ben-info"><div class="pay-ben-name">${b.name}</div><div class="pay-ben-bank">${b.bank}${paid}</div></div></div>`;
+  });
+  html += '</div></div></div>';
+  return html;
+}
+
+function bindFlowUI(bubble, ui) {
+  // Make beneficiary items clickable
+  setTimeout(() => {
+    bubble.querySelectorAll('.pay-ben-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const name = item.dataset.benName;
+        if (name) voQuickSend(name);
+      });
+    });
+  }, 10);
+}
+
+function voQuickSend(text) {
+  const input = document.getElementById('voTextInput');
+  input.value = text;
+  submitVoiceText();
+}
+
+function submitPayAmount() {
+  const input = document.getElementById('payAmountInput');
+  if (input && input.value.trim()) {
+    voQuickSend(input.value.trim());
+  }
+}
+
+async function voLoadHistory() {
+  try {
+    const res = await fetch(`${API}/api/voice/history`);
+    const data = await res.json();
+    const chat = document.getElementById('voChat');
+    if (data.history && data.history.length > 0) {
+      chat.querySelector('.vo-welcome')?.remove();
+      data.history.forEach(m => {
+        const bubble = document.createElement('div');
+        bubble.className = `vo-bubble ${m.role === 'user' ? 'user' : 'ai'}`;
+        bubble.innerHTML = m.text;
+        chat.appendChild(bubble);
+      });
+      chat.scrollTop = chat.scrollHeight;
+    }
+  } catch(e) {}
+}
+
+let voHistoryLoaded = false;
+function openVoiceOverlay() {
+  document.getElementById('voiceOverlay').classList.add('active');
+  initVoChips();
+  if (!voHistoryLoaded) { voLoadHistory(); voHistoryLoaded = true; }
+  setTimeout(() => {
+    document.getElementById('voChat').scrollTop = document.getElementById('voChat').scrollHeight;
+    document.getElementById('voTextInput').focus();
+  }, 150);
+}
+function closeVoiceOverlay() {
+  document.getElementById('voiceOverlay').classList.remove('active');
+  // Stop TTS when closing
+  if (ttsSupported) window.speechSynthesis.cancel();
+  // Stop mic if recording
+  if (_mic.recording) stopMic();
+}
+function voQuickAsk(text) {
+  // Strip leading emoji + space from welcome action buttons
+  text = text.replace(/^[^\w\s"']+\s*/, '').trim();
+  if (!text) return;
+  voAddMessage('user', text);
+  processVoice(text);
+}
+
+function initVoChips() {
+  const chips = document.getElementById('voChips');
+  const shuffled = [...VOICE_COMMANDS].sort(() => Math.random() - 0.5).slice(0, 3);
+  chips.innerHTML = '';
+  shuffled.forEach(s => {
+    const chip = document.createElement('div');
+    chip.className = 'vo-chip';
+    chip.textContent = s;
+    chip.onclick = () => { voAddMessage('user', s); processVoice(s); };
+    chips.appendChild(chip);
+  });
+}
+
+// ==================== MIC RECORDING (PCM → WAV → server STT) ====================
+let _mic = {
+  chunks: [], recording: false, stream: null,
+  analyser: null, audioCtx: null, animFrame: null, timer: null,
+  seconds: 0, silenceAt: 0, spokeBefore: false,
+  scriptNode: null, pcmChunks: [], sampleRate: 16000
+};
+
+function toggleMic() {
+  if (_mic.recording) { micStop(); return; }
+  micStart();
+}
+
+async function micStart() {
+  const btn = document.getElementById('voMicBtn');
+  try {
+    _mic.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { deviceId: { exact: 'default' }, echoCancellation: false, noiseSuppression: false, autoGainControl: true }
+    });
+  } catch(e) {
+    btn.classList.add('unavailable');
+    voAddMessage('ai', 'Microphone blocked. Check browser permissions or type below.');
+    return;
+  }
+
+  // Reset state
+  _mic.recording = true;
+  _mic.chunks = [];
+  _mic.seconds = 0;
+  _mic.silenceAt = 0;
+  _mic.spokeBefore = false;
+
+  // Build waveform bars
+  const wf = document.getElementById('voWaveform');
+  wf.innerHTML = '';
+  for (let i = 0; i < 28; i++) {
+    const b = document.createElement('div');
+    b.className = 'vo-wave-bar';
+    b.style.height = '3px';
+    wf.appendChild(b);
+  }
+
+  // Show recording UI
+  document.getElementById('voRecording').style.display = 'flex';
+  document.getElementById('voRecTime').textContent = '0s';
+  btn.classList.add('listening');
+  document.getElementById('micFab').classList.add('listening');
+
+  // Audio analyser for waveform + silence detection
+  _mic.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Chrome suspends AudioContext — must resume after user gesture
+  if (_mic.audioCtx.state === 'suspended') await _mic.audioCtx.resume();
+  _mic.analyser = _mic.audioCtx.createAnalyser();
+  _mic.analyser.fftSize = 256;
+  _mic.analyser.smoothingTimeConstant = 0.6;
+  const srcNode = _mic.audioCtx.createMediaStreamSource(_mic.stream);
+  srcNode.connect(_mic.analyser);
+  console.log('[Mic] AudioContext state:', _mic.audioCtx.state, 'sampleRate:', _mic.audioCtx.sampleRate);
+  // Verify mic stream is active
+  const track = _mic.stream.getAudioTracks()[0];
+  console.log('[Mic] Track:', track.label, 'enabled:', track.enabled, 'muted:', track.muted, 'readyState:', track.readyState);
+
+  // Use time-domain data (waveform) — more responsive than frequency
+  const bufLen = _mic.analyser.fftSize;
+  const timeBuf = new Uint8Array(bufLen);
+  const bars = wf.querySelectorAll('.vo-wave-bar');
+  const barCount = bars.length;
+  let _animCount = 0;
+
+  function animate() {
+    if (!_mic.recording) return;
+    _mic.analyser.getByteTimeDomainData(timeBuf);
+
+    // Calculate RMS volume (0-1)
+    let sum = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const v = (timeBuf[i] - 128) / 128;
+      sum += v * v;
+    }
+    const rms = Math.sqrt(sum / bufLen);
+    const volume = Math.min(1, rms * 4); // amplify for visual
+    // Log first few frames + every 60th frame to diagnose
+    if (_animCount < 5 || _animCount % 60 === 0) console.log('[Mic] frame', _animCount, 'rms:', rms.toFixed(4), 'vol:', volume.toFixed(3));
+    _animCount++;
+
+    // Animate bars — center bars taller, edges shorter, with randomness
+    bars.forEach((bar, i) => {
+      const center = Math.abs(i - barCount / 2) / (barCount / 2);
+      const base = (1 - center * 0.6) * volume;
+      const jitter = volume > 0.05 ? (Math.random() * 0.3 * volume) : 0;
+      const h = Math.max(3, (base + jitter) * 28);
+      bar.style.height = h + 'px';
+      bar.style.background = volume > 0.3 ? 'var(--red)' : volume > 0.08 ? 'var(--orange)' : 'var(--text-muted)';
+    });
+
+    // Silence detection: only auto-stop after user has actually spoken
+    if (volume > 0.1) {
+      _mic.spokeBefore = true;
+      _mic.silenceAt = 0;
+    } else if (_mic.spokeBefore) {
+      if (!_mic.silenceAt) _mic.silenceAt = Date.now();
+      else if (Date.now() - _mic.silenceAt > 2000) { // 2s silence after speech
+        micStop();
+        return;
+      }
+    }
+
+    _mic.animFrame = requestAnimationFrame(animate);
+  }
+  animate();
+
+  // Timer
+  _mic.timer = setInterval(() => {
+    _mic.seconds++;
+    document.getElementById('voRecTime').textContent = _mic.seconds + 's';
+  }, 1000);
+
+  // Record raw PCM via ScriptProcessorNode — encode as WAV (bypasses webm/ffmpeg issues)
+  _mic.pcmChunks = [];
+  const bufSize = 4096;
+  _mic.scriptNode = _mic.audioCtx.createScriptProcessor(bufSize, 1, 1);
+  srcNode.connect(_mic.scriptNode);
+  _mic.scriptNode.connect(_mic.audioCtx.destination); // Required for processing to work
+  _mic.scriptNode.onaudioprocess = (e) => {
+    if (_mic.recording) {
+      const data = e.inputBuffer.getChannelData(0);
+      _mic.pcmChunks.push(new Float32Array(data)); // copy
+    }
+  };
+  _mic.sampleRate = _mic.audioCtx.sampleRate;
+  console.log('[Mic] Recording PCM at', _mic.sampleRate, 'Hz');
+
+  // Hard max 20s
+  setTimeout(() => { if (_mic.recording) micStop(); }, 20000);
+}
+
+function micStop() {
+  if (!_mic.recording) return;
+  _mic.recording = false;
+
+  // Hide recording UI
+  document.getElementById('voRecording').style.display = 'none';
+  document.getElementById('voMicBtn').classList.remove('listening');
+  document.getElementById('micFab').classList.remove('listening');
+
+  if (_mic.animFrame) { cancelAnimationFrame(_mic.animFrame); _mic.animFrame = null; }
+  if (_mic.timer) { clearInterval(_mic.timer); _mic.timer = null; }
+  if (_mic.scriptNode) { _mic.scriptNode.disconnect(); _mic.scriptNode = null; }
+
+  // Build WAV from PCM chunks, then clean up
+  micBuildAndTranscribe().then(() => {
+    if (_mic.stream) { _mic.stream.getTracks().forEach(t => t.stop()); _mic.stream = null; }
+    if (_mic.audioCtx) { _mic.audioCtx.close().catch(() => {}); _mic.audioCtx = null; }
+  });
+}
+
+function micBuildAndTranscribe() {
+  const chunks = _mic.pcmChunks || [];
+  if (chunks.length === 0) { voAddMessage('ai', 'No audio captured. Try again.'); return Promise.resolve(); }
+
+  // Merge all PCM chunks into single Float32Array
+  const totalLen = chunks.reduce((sum, c) => sum + c.length, 0);
+  const pcm = new Float32Array(totalLen);
+  let offset = 0;
+  for (const chunk of chunks) { pcm.set(chunk, offset); offset += chunk.length; }
+
+  // Check if audio has actual content (not silence)
+  let maxSample = 0;
+  for (let i = 0; i < pcm.length; i++) maxSample = Math.max(maxSample, Math.abs(pcm[i]));
+  console.log('[Mic] PCM samples:', totalLen, 'maxAmplitude:', maxSample.toFixed(4), 'duration:', (totalLen / _mic.sampleRate).toFixed(1) + 's');
+
+  if (maxSample < 0.01) {
+    voAddMessage('ai', 'No audio detected from mic. Check that your microphone is not muted in system settings.');
+    return Promise.resolve();
+  }
+
+  // Encode as 16-bit PCM WAV
+  const sampleRate = _mic.sampleRate;
+  const wavBuf = encodeWAV(pcm, sampleRate);
+  const blob = new Blob([wavBuf], { type: 'audio/wav' });
+  console.log('[Mic] WAV blob:', blob.size, 'bytes');
+
+  _mic.chunks = [blob];
+  return micTranscribe();
+}
+
+function encodeWAV(pcmFloat, sampleRate) {
+  const numSamples = pcmFloat.length;
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+
+  // WAV header
+  const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);         // chunk size
+  view.setUint16(20, 1, true);          // PCM format
+  view.setUint16(22, 1, true);          // mono
+  view.setUint32(24, sampleRate, true);  // sample rate
+  view.setUint32(28, sampleRate * 2, true); // byte rate
+  view.setUint16(32, 2, true);          // block align
+  view.setUint16(34, 16, true);         // bits per sample
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples * 2, true);
+
+  // Convert float32 to int16
+  for (let i = 0; i < numSamples; i++) {
+    let s = Math.max(-1, Math.min(1, pcmFloat[i]));
+    view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return buffer;
+}
+
+async function micTranscribe() {
+  console.log('[Mic] Transcribing...', _mic.chunks.length, 'chunks');
+  if (_mic.chunks.length === 0) { voAddMessage('ai', 'No audio captured. Try again.'); return; }
+  const blob = _mic.chunks[0]; // Single WAV blob from encodeWAV
+  console.log('[Mic] Sending WAV:', blob.size, 'bytes');
+  if (blob.size < 500) { voAddMessage('ai', 'Recording too short. Hold mic button longer.'); return; }
+
+  // Show "Transcribing..." indicator
+  const chat = document.getElementById('voChat');
+  const indicator = document.createElement('div');
+  indicator.className = 'vo-typing';
+  indicator.innerHTML = '<span></span><span></span><span></span>';
+  chat.appendChild(indicator);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const form = new FormData();
+    form.append('audio', blob, 'recording.wav');
+    const res = await fetch(`${API}/api/voice/transcribe`, { method: 'POST', body: form });
+    const data = await res.json();
+    indicator.remove();
+
+    if (data.success && data.text) {
+      voAddMessage('user', data.text);
+      processVoice(data.text);
+    } else {
+      voAddMessage('ai', data.error || 'Could not understand. Speak louder or try typing.');
+    }
+  } catch(e) {
+    indicator.remove();
+    voAddMessage('ai', 'Transcription failed — check internet connection.');
+  }
+}
+
+function initSpeechRecognition() { speechMode = 'demo'; }
+
+function submitVoiceText() {
+  const input = document.getElementById('voTextInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  voAddMessage('user', text);
+  processVoice(text);
+}
+
+let ttsVoice = null;
+let ttsReady = false;
+function initTTS() {
+  if (!ttsSupported) return;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+  // Priority: natural/premium voices first, then en-ZA, en-GB, en-US
+  const prefs = [
+    v => /zira|hazel|libby|aria|jenny|sonia|emma/i.test(v.name) && v.lang.startsWith('en'),
+    v => v.lang === 'en-ZA',
+    v => v.lang === 'en-GB' && !/google/i.test(v.name),
+    v => v.lang === 'en-GB',
+    v => v.lang.startsWith('en') && /natural|neural|premium/i.test(v.name),
+    v => v.lang === 'en-US' && !/google/i.test(v.name),
+    v => v.lang.startsWith('en'),
+  ];
+  for (const pref of prefs) {
+    const match = voices.find(pref);
+    if (match) { ttsVoice = match; break; }
+  }
+  if (!ttsVoice && voices.length) ttsVoice = voices[0];
+  ttsReady = true;
+  console.log('[TTS] Voice:', ttsVoice?.name, ttsVoice?.lang);
+}
+if (ttsSupported) {
+  window.speechSynthesis.onvoiceschanged = initTTS;
+  initTTS();
+}
+
+function speakResponse(text) {
+  if (!ttsSupported) return;
+  window.speechSynthesis.cancel();
+  // Clean text for speech — remove R formatting, abbreviations
+  let clean = text.replace(/R\s?(\d)/g, '$1 rand').replace(/DTI/g, 'D T I')
+    .replace(/\bmo\b/g, 'months').replace(/\bpct\b/g, 'percent');
+  const utter = new SpeechSynthesisUtterance(clean);
+  if (ttsVoice) utter.voice = ttsVoice;
+  utter.lang = ttsVoice?.lang || 'en-ZA';
+  utter.rate = 1.15;   // Slightly fast — sounds more natural
+  utter.pitch = 1.02;  // Tiny pitch lift for warmth
+  utter.volume = 1.0;
+  window.speechSynthesis.speak(utter);
+}
+
+async function processVoice(text) {
+  addLog('process', `Voice: "${text}"`);
+
+  // Show typing indicator
+  const chat = document.getElementById('voChat');
+  const typing = document.createElement('div');
+  typing.className = 'vo-typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+
+  let response = '', command = '', action = null, uiData = null;
+  try {
+    const res = await fetch(`${API}/api/voice`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text}), signal: controller.signal
+    });
+    clearTimeout(timer);
+    const data = await res.json();
+    response = data.response; command = data.command; action = data.action;
+    uiData = data.ui || null;
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') {
+      response = 'Taking too long — the AI model may be loading. Try again in a moment.';
+      command = 'timeout';
+    } else {
+      response = 'Could not reach the server. Please check if it\'s running.';
+      command = 'error';
+    }
+  }
+
+  // Remove typing indicator
+  typing.remove();
+
+  // Add AI response bubble with optional dynamic UI
+  let actionBadge = null;
+  if (action) {
+    if (action.type === 'download') actionBadge = 'PDF downloading...';
+    else if (action.type === 'task_created') actionBadge = 'Task created';
+    else if (action.type === 'task_completed') actionBadge = 'Task done';
+    else if (action.type === 'kg_updated') actionBadge = action.detail || 'Graph updated';
+    else if (action.type === 'card_frozen') actionBadge = 'Card frozen';
+    else if (action.type === 'payment_complete') actionBadge = 'Payment sent';
+  }
+  voAddMessage('ai', response, actionBadge, uiData);
+  addLog('safe', `Voice [${command}]: "${response.slice(0, 60)}..."`);
+
+  // Handle actions
+  if (action) {
+    if (action.type === 'download' && action.url) {
+      const link = document.createElement('a');
+      link.href = `${API}${action.url}`;
+      link.download = '';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      phoneToast('\ud83d\udcc4', `${action.name || 'Document'} downloaded`, 'info');
+    }
+    if (action.type === 'task_created') {
+      phoneToast('\u2705', `Task: ${action.task?.text || 'created'}`, 'safe');
+      loadTasks();
+    }
+    if (action.type === 'task_completed') {
+      phoneToast('\u2705', `Done: ${action.task?.text || 'completed'}`, 'safe');
+      loadTasks();
+    }
+    if (action.type === 'kg_updated') {
+      phoneToast('\ud83e\udde0', action.detail || 'Knowledge graph updated', 'info');
+      try {
+        const gRes = await fetch(`${API}/api/kg/visualize`);
+        gRenderGraph(await gRes.json());
+      } catch(e) {}
+    }
+    if (action.unfreeze) {
+      cardFrozen = false; renderCards();
+      phoneToast('\ud83d\udd13', 'Card unfrozen', 'safe');
+    }
+    if (action.type === 'card_frozen') {
+      cardFrozen = true; renderCards();
+      phoneToast('\u26a0\ufe0f', 'Card frozen for your protection', 'critical');
+    }
+    if (action.type === 'account_switched') {
+      loadAccounts();
+    }
+    if (action.type === 'sim_started') {
+      simRunning = true; updateSimUI();
+    }
+    if (action.type === 'sim_stopped') {
+      simRunning = false; updateSimUI();
+      loadAccounts(); loadHealthScore(); loadInsights();
+    }
+    if (action.type === 'transfer_complete') {
+      loadAccounts();
+      setTimeout(loadTransferAccounts, 500);
+    }
+    if (action.type === 'health_score') {
+      renderHealthScore(action.data);
+    }
+    if (action.type === 'payment_complete') {
+      phoneToast('&#9989;', `R${action.amount?.toLocaleString()} paid to ${action.beneficiary}`, 'safe', 4000);
+      loadAccounts();
+    }
+  }
+
+  // Speak the response
+  speakResponse(response);
+
+  // Re-focus input for next message
+  document.getElementById('voTextInput').focus();
+}
+</script>
+
+<script>
+// ==================== BUDGETS ====================
+async function loadBudgets() {
+  try {
+    const res = await fetch(`${API}/api/budgets`);
+    const data = await res.json();
+    const list = document.getElementById('budgetList');
+    list.innerHTML = '';
+    let overCount = 0;
+    data.budgets.forEach(b => {
+      const pct = Math.min((b.spent / b.limit) * 100, 100);
+      const cls = pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
+      if (b.status === 'OVER') overCount++;
+      list.innerHTML += `
+        <div class="budget-card">
+          <div class="budget-top"><div class="budget-cat"><span class="budget-cat-icon">${b.icon}</span>${b.category}</div><div class="budget-period">per ${b.period}</div></div>
+          <div class="budget-amounts">R ${b.spent.toLocaleString()} / R ${b.limit.toLocaleString()}</div>
+          <div class="progress-bar"><div class="progress-fill progress-${cls}" style="width:${pct}%"></div></div>
+          ${b.status==='OVER'?`<div class="over-warning">R${(b.spent-b.limit).toLocaleString()} over limit</div>`:''}
+        </div>`;
+    });
+    document.getElementById('overBadge').textContent = `${overCount} over limit`;
+  } catch(e) {}
+}
+
+// ==================== ALERTS ====================
+async function loadAlerts() {
+  try {
+    const res = await fetch(`${API}/api/alerts`);
+    const data = await res.json();
+    const list = document.getElementById('alertList');
+    list.innerHTML = '';
+    data.alerts.forEach(a => {
+      list.innerHTML += `
+        <div class="alert-card" style="border-left-color:${a.border}">
+          <div class="alert-top"><div class="alert-icon">${a.icon}</div><div>
+            <div class="alert-title">${a.title}</div>
+            <div class="alert-body">${a.body}</div>
+            <div class="alert-time">${a.timestamp}</div>
+          </div></div>
+        </div>`;
+    });
+  } catch(e) {}
+}
+
+// ==================== DOCUMENTS ====================
+async function loadDocs() {
+  try {
+    const res = await fetch(`${API}/api/documents`);
+    const data = await res.json();
+    const list = document.getElementById('docList');
+    list.innerHTML = '';
+    data.documents.forEach(d => {
+      list.innerHTML += `
+        <div class="doc-card">
+          <div class="doc-icon">${d.icon}</div>
+          <div class="doc-info"><div class="doc-type">${d.title}</div><div class="doc-period">${d.period}</div><div class="doc-meta">${d.size} \u00B7 ${d.date}</div></div>
+          <button class="fetch-btn" onclick="fetchDoc(this,${d.id})">Fetch</button>
+        </div>`;
+    });
+  } catch(e) {}
+}
+
+async function fetchDoc(btn, id) {
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  addLog('process', `Fetching document ${id}...`);
+  try {
+    const res = await fetch(`${API}/api/documents/${id}/fetch`, {method:'POST'});
+    const data = await res.json();
+    // Trigger actual PDF download
+    const link = document.createElement('a');
+    link.href = `${API}${data.download_url}`;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    btn.textContent = '\u2713 Downloaded';
+    btn.style.background = 'var(--green)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--green)';
+    addLog('safe', `Document ${id} downloaded as PDF`);
+    phoneToast('\ud83d\udcc4', `PDF downloaded`, 'info');
+  } catch(e) { btn.textContent = 'Retry'; }
+  btn.disabled = false;
+}
+
+// ==================== SCANNER ====================
+async function scanReceipt() {
+  const area = document.getElementById('scanArea');
+  const result = document.getElementById('scanResult');
+  area.innerHTML = '<div class="spinner">Scanning receipt...</div>';
+  addLog('process', 'Scanning receipt...');
+  try {
+    const res = await fetch(`${API}/api/scan`, {method:'POST'});
+    const data = await res.json();
+    area.style.display = 'none';
+    result.innerHTML = `
+      <div class="card">
+        <div class="scan-merchant">${data.merchant} \u00B7 ${data.category}</div>
+        <div class="scan-amount">R ${data.amount.toFixed(2)}</div>
+        <div class="scan-items">${data.items.map(i=>`<span class="scan-item">${i}</span>`).join('')}</div>
+        <div class="scan-badges">
+          <span class="scan-badge badge-${data.budget_status}">${data.budget_status==='within'?'\u2713 Within Budget':'Over Budget'}</span>
+          <span class="scan-badge badge-${data.match_status}">${data.match_status==='matched'?'\u2713 Matched':'New'}</span>
+        </div>
+      </div>`;
+    addLog('safe', `Scanned: ${data.merchant} R${data.amount}`);
+  } catch(e) {
+    area.innerHTML = '<div class="scan-icon">&#128247;</div><div class="scan-text">Tap to scan a receipt</div>';
+  }
+}
+
+// ==================== TASKS ====================
+async function loadTasks() {
+  try {
+    const res = await fetch(`${API}/api/tasks`);
+    const data = await res.json();
+    const list = document.getElementById('taskList');
+    list.innerHTML = '';
+    let pending = 0;
+    data.tasks.forEach(t => {
+      if (!t.done) pending++;
+      list.innerHTML += `
+        <div class="task-card" onclick="toggleTask(${t.id},this)">
+          <div class="task-check ${t.done?'done':t.priority}" id="check-${t.id}"></div>
+          <div class="task-info"><div class="task-text ${t.done?'done':''}" id="text-${t.id}">${t.text}</div><div class="task-meta">${t.due} \u00B7 ${t.source}</div></div>
+          <span class="priority-pill priority-${t.priority}">${t.priority}</span>
+        </div>`;
+    });
+    document.getElementById('pendingBadge').textContent = `${pending} pending`;
+  } catch(e) {}
+}
+
+async function toggleTask(id) {
+  const check = document.getElementById('check-' + id);
+  const text = document.getElementById('text-' + id);
+  const done = !check.classList.contains('done');
+  try { await fetch(`${API}/api/tasks/${id}`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({done})}); } catch(e) {}
+  if (done) { check.className = 'task-check done'; text.classList.add('done'); }
+  else { check.classList.remove('done'); text.classList.remove('done'); }
+  addLog('action', `Task ${id}: ${done ? 'completed' : 'reopened'}`);
+}
+
+// ==================== REPORT ====================
+function loadReport() {
+  const cats = [
+    {name:'Shopping',amount:12399,pct:53},{name:'Insurance',amount:6047,pct:26},
+    {name:'Utilities',amount:2847,pct:12},{name:'Fuel',amount:1250,pct:5},
+    {name:'Subscription',amount:1137,pct:5},{name:'Food Delivery',amount:634,pct:3},
+    {name:'Groceries',amount:847,pct:4},{name:'Convenience',amount:157,pct:1}
+  ];
+  const bars = document.getElementById('reportBars');
+  bars.innerHTML = '';
+  cats.forEach(c => {
+    bars.innerHTML += `<div class="cat-bar"><div class="cat-name">${c.name}</div><div style="flex:1"><div class="cat-fill" style="width:${c.pct}%"></div></div><div class="cat-amount">R ${c.amount.toLocaleString()}</div></div>`;
+  });
+  document.getElementById('reportInsights').innerHTML = `
+    <div class="insight-item">Shopping concentration at 53% \u2014 Takealot R12,399 is the main driver.</div>
+    <div class="insight-item">3 subscriptions totalling R978/month. Netflix review recommended.</div>
+    <div class="insight-item">City Power bill 29% above average. Potential anomaly flagged.</div>
+    <div class="insight-item">Post-salary spending spike pattern detected (0.87 correlation).</div>`;
+}
+
+// ==================== LIVE TEST ====================
+async function runTest() {
+  const merchant = document.getElementById('testMerchant').value || 'Test Merchant';
+  const amount = parseFloat(document.getElementById('testAmount').value) || 1000;
+  const time = document.getElementById('testTime').value || '12:00';
+  const result = document.getElementById('testResult');
+  result.innerHTML = '<div class="spinner">Analyzing...</div>';
+  addLog('process', `Testing: ${merchant} R${amount} @ ${time}`);
+  try {
+    const res = await fetch(`${API}/api/classify`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({merchant, amount, time})});
+    const v = await res.json();
+    result.innerHTML = `
+      <div style="text-align:center;margin:12px 0"><div class="verdict-badge verdict-${v.verdict}">${v.verdict} \u00B7 ${(v.confidence*100).toFixed(0)}%</div></div>
+      <div class="card" style="margin:0"><div class="card-label">Reasoning</div><div class="card-text">${v.reasoning}</div></div>
+      <div class="tags" style="padding:8px 0;margin:0">${(v.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>`;
+    addLog(v.verdict==='BLOCK'?'critical':'safe', `Test: [${v.verdict}] ${merchant} R${amount}`);
+  } catch(e) {
+    result.innerHTML = '<div class="card" style="margin:0"><div class="card-text">Analysis failed. Server may be offline.</div></div>';
+  }
+}
+
+// ==================== DASHBOARD TAB ====================
+let dashLoaded = false;
+function loadDashboard() {
+  if (dashLoaded) {
+    // Refresh dynamic data on re-open
+    loadHealthScore(); loadInsights(); loadDashStats(); loadTransferAccounts();
+    return;
+  }
+  dashLoaded = true;
+  // Load all command center data
+  loadHealthScore();
+  loadInsights();
+  loadDashStats();
+  setTimeout(loadTransferAccounts, 300);
+  // Spending bars from live KG
+  loadDashSpending();
+}
+
+async function loadDashSpending() {
+  try {
+    // Fetch live spending from KG patterns endpoint
+    const res = await fetch(`${API}/api/kg/patterns`);
+    const data = await res.json();
+    const el = document.getElementById('dashSpendBars');
+    if (!el) return;
+    const cats = data.spending_by_category || [];
+    if (cats.length === 0) {
+      // Fallback static data
+      const fallback = [{name:'Shopping',amount:12399},{name:'Insurance',amount:6047},{name:'Utilities',amount:2847},{name:'Fuel',amount:1250},{name:'Subscription',amount:1137}];
+      const max = Math.max(...fallback.map(c => c.amount));
+      el.innerHTML = fallback.map(c =>
+        `<div class="dash-spend-bar"><div class="dash-spend-cat">${c.name}</div><div class="dash-spend-fill-bg"><div class="dash-spend-fill" style="width:${(c.amount/max)*100}%"></div></div><div class="dash-spend-amt">R ${c.amount.toLocaleString()}</div></div>`
+      ).join('');
+      return;
+    }
+    const sorted = cats.sort((a, b) => b.total - a.total).slice(0, 8);
+    const max = sorted[0]?.total || 1;
+    el.innerHTML = sorted.map(c =>
+      `<div class="dash-spend-bar"><div class="dash-spend-cat">${c.category}</div><div class="dash-spend-fill-bg"><div class="dash-spend-fill" style="width:${(c.total/max)*100}%"></div></div><div class="dash-spend-amt">R ${c.total.toLocaleString()}</div></div>`
+    ).join('');
+  } catch(e) {
+    // Fallback
+    const el = document.getElementById('dashSpendBars');
+    if (el) el.innerHTML = '<div style="font-size:10px;color:rgba(255,255,255,0.3);text-align:center;padding:8px">Seed data to see spending</div>';
+  }
+}
+
+async function loadDashStats() {
+  try {
+    const [statsRes, simRes] = await Promise.all([
+      fetch(`${API}/api/kg/stats`),
+      fetch(`${API}/api/simulator/status`)
+    ]);
+    const s = await statsRes.json();
+    const sim = await simRes.json();
+    document.getElementById('dStatNodes').textContent = s.total_nodes;
+    document.getElementById('dStatTxns').textContent = s.transactions_processed;
+    document.getElementById('dStatAlerts').textContent = s.alerts_active;
+    document.getElementById('dStatMonths').textContent = sim.months_simulated || 0;
+    // Sync sim state
+    simRunning = sim.running || false;
+    updateSimUI();
+  } catch(e) {}
+}
+
+// ==================== GRAPH TAB (D3) ====================
+const nodeColors = {
+  person:'#003B5C', merchant:'#007A6E', category:'#C68A0E', subscription:'#6366F1',
+  pattern:'#C2571A', budget:'#2E7D6F', goal:'#0EA5E9', alert:'#B91C1C',
+  prediction:'#8B5CF6', scenario:'#059669', task:'#D97706',
+  income:'#10B981', loan:'#EF4444', investment:'#3B82F6',
+  insurance:'#F59E0B', tax:'#6B7280', account:'#1E40AF',
+  transfer:'#14B8A6', payee:'#8B5CF6', forex:'#EC4899',
+  invoice:'#F97316', cost_center:'#84CC16'
+};
+const nodeSizes = {
+  person:16, merchant:8, category:11, subscription:7, pattern:10,
+  budget:8, goal:10, alert:7, prediction:8, scenario:8, task:7,
+  income:10, loan:11, investment:11, insurance:10, tax:8,
+  account:13, transfer:7, payee:7, forex:8, invoice:7, cost_center:8
+};
+let gSimulation, gSvg, gG, gLinkG, gNodeG, gLabelG;
+let gData = {nodes: [], links: []};
+
+function toggleGraphFullscreen() {
+  const panel = document.getElementById('ptab-graph');
+  const btn = document.getElementById('btnFullscreen');
+  panel.classList.toggle('graph-fullscreen');
+  const isFs = panel.classList.contains('graph-fullscreen');
+  btn.classList.toggle('active', isFs);
+  btn.innerHTML = isFs ? '&#x2716; Exit' : '&#x26F6; Fullscreen';
+  // Re-render graph to fit new size
+  setTimeout(() => {
+    const container = panel.querySelector('.graph-container');
+    const w = container.clientWidth, h = container.clientHeight;
+    const svg = document.getElementById('graphSvg');
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    if (gSimulation) {
+      gSimulation.force('center', d3.forceCenter(w/2, h/2));
+      gSimulation.alpha(0.3).restart();
+    }
+  }, 50);
+}
+// ESC exits fullscreen
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('ptab-graph').classList.contains('graph-fullscreen')) {
+    toggleGraphFullscreen();
+  }
+});
+
+function handleGraphUpdate(msg) {
+  if (msg.graph) {
+    gRenderGraph(msg.graph);
+  }
+  if (msg.stats) {
+    const nodesEl = document.getElementById('dStatNodes');
+    const edgesEl = document.getElementById('dStatEdges');
+    const txnEl = document.getElementById('dStatTxns');
+    if (nodesEl) nodesEl.textContent = msg.stats.total_nodes || 0;
+    if (edgesEl) edgesEl.textContent = (msg.stats.total_edges || 0) + ' edges';
+    if (txnEl) txnEl.textContent = msg.stats.transactions_processed || 0;
+  }
+}
+
+function initGraph() {
+  const container = document.getElementById('ptab-graph').querySelector('.graph-container');
+  const w = container.clientWidth;
+  const h = container.clientHeight - 36;
+  gSvg = d3.select('#graphSvg').attr('width', w).attr('height', h);
+  const defs = gSvg.append('defs');
+  const glow = defs.append('filter').attr('id', 'gglow');
+  glow.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur');
+  glow.append('feMerge').selectAll('feMergeNode').data(['blur', 'SourceGraphic']).enter().append('feMergeNode').attr('in', d => d);
+  defs.append('marker').attr('id', 'garrow').attr('viewBox', '0 -5 10 10').attr('refX', 16).attr('refY', 0).attr('markerWidth', 5).attr('markerHeight', 5).attr('orient', 'auto').append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', 'rgba(255,255,255,0.15)');
+  gG = gSvg.append('g');
+  gLinkG = gG.append('g');
+  gNodeG = gG.append('g');
+  gLabelG = gG.append('g');
+  gSvg.call(d3.zoom().scaleExtent([0.2, 5]).on('zoom', (event) => gG.attr('transform', event.transform)));
+  gSimulation = d3.forceSimulation()
+    .force('link', d3.forceLink().id(d => d.id).distance(60))
+    .force('charge', d3.forceManyBody().strength(-150))
+    .force('center', d3.forceCenter(w / 2, h / 2))
+    .force('collide', d3.forceCollide().radius(d => (nodeSizes[d.type] || 7) + 4))
+    .on('tick', gTicked);
+  gBuildLegend();
+  gLoadGraph();
+}
+
+function gBuildLegend() {
+  const legend = document.getElementById('gLegend');
+  legend.innerHTML = '';
+  Object.entries(nodeColors).forEach(([type, color]) => {
+    const count = gData.nodes.filter(n => n.type === type).length;
+    if (count > 0 || type === 'person') legend.innerHTML += `<div class="graph-legend-item"><div class="graph-legend-dot" style="background:${color}"></div>${type} (${count})</div>`;
+  });
+}
+
+function gTicked() {
+  gLinkG.selectAll('line').attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  gNodeG.selectAll('circle').attr('cx', d => d.x).attr('cy', d => d.y);
+  gLabelG.selectAll('text').attr('x', d => d.x).attr('y', d => d.y + (nodeSizes[d.type] || 7) + 10);
+}
+
+function gRenderGraph(data) {
+  gData = data;
+  const links = gLinkG.selectAll('line').data(data.links, d => d.source + '-' + d.target);
+  links.exit().remove();
+  links.enter().append('line')
+    .attr('stroke', d => d.type === 'CORRELATES_WITH' ? 'rgba(199,87,26,0.3)' : 'rgba(255,255,255,0.12)')
+    .attr('stroke-width', 1).attr('marker-end', 'url(#garrow)')
+    .style('opacity', 0).transition().duration(600).style('opacity', 1);
+  const nodes = gNodeG.selectAll('circle').data(data.nodes, d => d.id);
+  nodes.exit().transition().duration(300).attr('r', 0).remove();
+  nodes.enter().append('circle')
+    .attr('r', 0).attr('fill', d => d.color || nodeColors[d.type] || '#999')
+    .attr('stroke', 'rgba(255,255,255,0.1)').attr('stroke-width', 1)
+    .style('cursor', 'pointer').style('filter', d => d.type === 'alert' ? 'url(#gglow)' : 'none')
+    .on('mouseover', gHandleHover).on('mouseout', gHandleOut).on('click', gHandleClick)
+    .call(d3.drag().on('start', gDragStart).on('drag', gDragging).on('end', gDragEnd))
+    .transition().duration(500).delay((d, i) => i * 25)
+    .attr('r', d => d.size || nodeSizes[d.type] || 7);
+  const labels = gLabelG.selectAll('text').data(data.nodes, d => d.id);
+  labels.exit().remove();
+  labels.enter().append('text')
+    .attr('text-anchor', 'middle').attr('fill', 'rgba(255,255,255,0.6)')
+    .attr('font-size', '9px').attr('font-family', "'Libre Franklin', sans-serif")
+    .style('pointer-events', 'none')
+    .text(d => d.label.length > 14 ? d.label.slice(0, 12) + '..' : d.label)
+    .style('opacity', 0).transition().duration(500).delay((d, i) => i * 25 + 200).style('opacity', 1);
+  gSimulation.nodes(data.nodes);
+  gSimulation.force('link').links(data.links);
+  gSimulation.alpha(1).restart();
+  document.getElementById('gNodeCount').textContent = data.nodes.length;
+  document.getElementById('gEdgeCount').textContent = data.links.length;
+  gBuildLegend();
+}
+
+function gHandleHover(event, d) {
+  gLinkG.selectAll('line').style('opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.05);
+  gNodeG.selectAll('circle').style('opacity', n => {
+    if (n.id === d.id) return 1;
+    return gData.links.some(l => (l.source.id === d.id && l.target.id === n.id) || (l.target.id === d.id && l.source.id === n.id)) ? 1 : 0.15;
+  });
+  const tooltip = document.getElementById('gTooltip');
+  tooltip.style.display = 'block';
+  tooltip.style.left = (event.pageX + 12) + 'px';
+  tooltip.style.top = (event.pageY - 12) + 'px';
+  let attrsHtml = '';
+  if (d.attrs) {
+    attrsHtml = Object.entries(d.attrs).filter(([k]) => !['amounts','merchants'].includes(k)).slice(0, 4)
+      .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toLocaleString() : v}`).join('<br>');
+  }
+  tooltip.innerHTML = `<div style="font-weight:600;color:${d.color || nodeColors[d.type]}">${d.label}</div><div style="font-size:9px;color:rgba(255,255,255,0.4);margin:2px 0">${d.type.toUpperCase()}</div>${attrsHtml ? `<div style="color:rgba(255,255,255,0.6);font-family:'DM Mono',monospace;font-size:9px">${attrsHtml}</div>` : ''}`;
+}
+
+function gHandleOut() {
+  gLinkG.selectAll('line').style('opacity', 1);
+  gNodeG.selectAll('circle').style('opacity', 1);
+  document.getElementById('gTooltip').style.display = 'none';
+}
+
+async function gHandleClick(event, d) {
+  gAddEvent(`Expanding: ${d.label}`, d.color || nodeColors[d.type]);
+  try {
+    const res = await fetch(`${API}/api/kg/traverse/${d.id}?depth=2`);
+    const sub = await res.json();
+    sub.nodes.forEach(n => { if (!gData.nodes.find(gn => gn.id === n.id)) { n.x = d.x + (Math.random()-0.5)*50; n.y = d.y + (Math.random()-0.5)*50; gData.nodes.push(n); } });
+    sub.links.forEach(l => { if (!gData.links.find(gl => gl.source.id === l.source && gl.target.id === l.target)) gData.links.push(l); });
+    gRenderGraph(gData);
+  } catch(e) {}
+}
+
+function gDragStart(event, d) { if (!event.active) gSimulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; }
+function gDragging(event, d) { d.fx = event.x; d.fy = event.y; }
+function gDragEnd(event, d) { if (!event.active) gSimulation.alphaTarget(0); d.fx = null; d.fy = null; }
+
+function gAddEvent(text, color = '#fff') {
+  const feed = document.getElementById('gEventFeed');
+  const time = new Date().toTimeString().slice(0, 5);
+  const item = document.createElement('div');
+  item.innerHTML = `<span class="graph-event-time">${time}</span><span class="graph-event-text" style="color:${color}">${text}</span>`;
+  feed.appendChild(item);
+  feed.scrollLeft = feed.scrollWidth;
+  if (feed.children.length > 15) feed.removeChild(feed.firstChild);
+}
+
+async function gLoadGraph() {
+  try {
+    const res = await fetch(`${API}/api/kg/visualize`);
+    const data = await res.json();
+    if (data.nodes && data.nodes.length > 0) { gRenderGraph(data); gAddEvent(`Loaded: ${data.nodes.length} nodes`, '#007A6E'); }
+    else { gRenderGraph({nodes: [{id:'user',label:'You',type:'person',color:'#003B5C',size:16,attrs:{}}], links: []}); gAddEvent('Empty graph. Seed to populate.', '#C68A0E'); }
+  } catch(e) {
+    gRenderGraph({nodes: [{id:'user',label:'You',type:'person',color:'#003B5C',size:16,attrs:{}}], links: []});
+    gAddEvent('Server offline', '#C68A0E');
+  }
+}
+
+// ==================== PROFILE & MEMORY ====================
+async function loadProfile() {
+  try {
+    const res = await fetch(`${API}/api/voice/memory`);
+    const data = await res.json();
+
+    // Name — find in facts
+    const nameFact = data.facts.find(f => f.toLowerCase().startsWith("user's name:") || f.toLowerCase().startsWith("my name is"));
+    let name = '';
+    if (nameFact) {
+      name = nameFact.includes(':') ? nameFact.split(':').pop().trim() : nameFact.replace(/my name is/i,'').trim();
+    }
+    const nameInput = document.getElementById('profName');
+    nameInput.value = name;
+
+    // Avatar
+    const avatar = document.getElementById('profAvatar');
+    avatar.textContent = name ? name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) : '?';
+
+    // Facts
+    const factsEl = document.getElementById('profFacts');
+    factsEl.innerHTML = '';
+    data.facts.forEach((f, i) => {
+      factsEl.innerHTML += `<div class="prof-fact"><span class="prof-fact-text">${f}</span><button class="prof-fact-del" onclick="deleteProfileFact(${i})" title="Remove">&times;</button></div>`;
+    });
+    if (!data.facts.length) factsEl.innerHTML = '<div style="color:#94a3b8;font-size:11px;padding:8px">No facts stored yet. Talk to the AI or add them here.</div>';
+
+    // Preferences
+    const prefsEl = document.getElementById('profPrefs');
+    const prefKeys = Object.keys(data.preferences || {});
+    prefsEl.innerHTML = '';
+    if (prefKeys.length) {
+      prefKeys.forEach(k => {
+        prefsEl.innerHTML += `<div class="prof-pref"><strong>${k}:</strong> ${data.preferences[k]}</div>`;
+      });
+    } else {
+      prefsEl.innerHTML = '<div style="color:#94a3b8;font-size:11px;padding:8px">No preferences set. Say things like "I prefer..." to the AI.</div>';
+    }
+
+    // Conversation stats
+    document.getElementById('profConvCount').textContent = `${data.conversation_count} messages`;
+    document.getElementById('profSummary').textContent = data.summary || 'No summary yet. The AI generates one after ~20 messages.';
+
+  } catch(e) {
+    console.error('Failed to load profile:', e);
+  }
+}
+
+async function saveProfileName() {
+  const name = document.getElementById('profName').value.trim();
+  if (!name) return;
+
+  // Remove old name facts, add new one
+  const res = await fetch(`${API}/api/voice/memory`);
+  const data = await res.json();
+  const oldFacts = data.facts.filter(f => !f.toLowerCase().startsWith("user's name:") && !f.toLowerCase().startsWith("my name is"));
+  oldFacts.unshift(`My name is ${name}`);
+
+  await fetch(`${API}/api/voice/memory/update`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({facts: oldFacts})
+  });
+
+  // Update avatar
+  document.getElementById('profAvatar').textContent = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  phoneToast('&#9989;', `Name saved: ${name}`, 'safe');
+  loadProfile();
+}
+
+async function deleteProfileFact(index) {
+  const res = await fetch(`${API}/api/voice/memory`);
+  const data = await res.json();
+  data.facts.splice(index, 1);
+  await fetch(`${API}/api/voice/memory/update`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({facts: data.facts})
+  });
+  phoneToast('&#128465;', 'Fact removed', 'info');
+  loadProfile();
+}
+
+async function addProfileFact() {
+  const fact = prompt('Enter a fact about yourself:');
+  if (!fact || !fact.trim()) return;
+  const res = await fetch(`${API}/api/voice/memory`);
+  const data = await res.json();
+  data.facts.push(fact.trim());
+  await fetch(`${API}/api/voice/memory/update`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({facts: data.facts})
+  });
+  phoneToast('&#9989;', 'Fact added', 'safe');
+  loadProfile();
+}
+
+async function clearAllMemory() {
+  if (!confirm('This will erase all memory — facts, preferences, conversation history. Are you sure?')) return;
+  await fetch(`${API}/api/voice/clear`, {method:'POST'});
+  phoneToast('&#128465;', 'All memory cleared', 'info');
+  loadProfile();
+}
+
+// Phone toast notification
+function phoneToast(icon, text, type = 'info', duration = 3000) {
+  const toast = document.getElementById('phoneToast');
+  toast.querySelector('.phone-toast-icon').textContent = icon;
+  toast.querySelector('.phone-toast-text').textContent = text;
+  toast.className = 'phone-toast toast-' + type + ' show';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// Add a transaction to the phone's home list (prepend)
+function phoneAddTxn(txn) {
+  const list = document.getElementById('txnList');
+  const div = document.createElement('div');
+  div.className = 'txn-item';
+  div.style.animation = 'slideIn 0.3s ease';
+  div.onclick = () => showDetail(txn);
+  div.innerHTML = `
+    <div class="txn-icon">${txn.icon || '💳'}</div>
+    <div class="txn-info">
+      <div class="txn-merchant">${txn.merchant}</div>
+      <div class="txn-meta">${txn.category} · ${txn.time}</div>
+    </div>
+    <div class="txn-right">
+      <div class="txn-amount" style="${txn.amount < 0 ? 'color:var(--green)' : ''}">${txn.amount < 0 ? '+' : ''}R ${Math.abs(txn.amount).toLocaleString('en-ZA',{minimumFractionDigits:2})}</div>
+      ${txn.verdict && txn.verdict !== 'SAFE' ? `<div class="risk-badge risk-${txn.verdict}">${txn.verdict}</div>` : ''}
+    </div>`;
+  list.prepend(div);
+}
+
+// Update balance display
+function phoneUpdateBalance(amount) {
+  loadAccounts();
+}
+
+// Server-driven demo — phone_data comes from API response, no client-side mapping needed
+
+async function runDemoStep(btn) {
+  const step = btn.dataset.step;
+  const isRepeatable = btn.dataset.repeatable === 'true';
+
+  // One-shot: block after done
+  if (!isRepeatable && btn.classList.contains('done')) return;
+
+  btn.classList.add('active');
+  gAddEvent(`Running: ${btn.querySelector('.demo-step-title').textContent}...`, '#007A6E');
+
+  try {
+    const res = await fetch(`${API}/api/demo/step`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({step})
+    });
+    const data = await res.json();
+    btn.classList.remove('active');
+
+    if (isRepeatable) {
+      const countEl = document.getElementById(`press-${step}`);
+      if (countEl && data.press) countEl.textContent = data.press;
+    } else {
+      btn.classList.add('done');
+    }
+
+    gAddEvent(data.message || 'Step complete', '#007A6E');
+
+    // Update month badge
+    if (data.demo_info) {
+      const badge = document.getElementById('demoMonthBadge');
+      if (badge) badge.textContent = `Month ${data.demo_info.month} \u00b7 ${data.demo_info.date_str}`;
+    }
+
+    // Refresh graph
+    const gRes = await fetch(`${API}/api/kg/visualize`);
+    gRenderGraph(await gRes.json());
+    if (data.stats) {
+      document.getElementById('gNodeCount').textContent = data.stats.total_nodes || 0;
+      document.getElementById('gEdgeCount').textContent = data.stats.total_edges || 0;
+    }
+
+    // === PHONE UPDATES (server-driven) ===
+    const pd = data.phone_data;
+    if (pd) {
+      if (pd.toast) phoneToast(pd.toast.icon, pd.toast.text, pd.toast.type, pd.toast.duration || 3000);
+      if (pd.txns && pd.txns.length > 0) {
+        for (let i = 0; i < pd.txns.length; i++) {
+          setTimeout(() => phoneAddTxn(pd.txns[i]), i * 150);
+        }
+      }
+      if (pd.balance) phoneUpdateBalance(pd.balance);
+      if (pd.cardFrozen) {
+        cardFrozen = true; renderCards();
+      }
+      if (pd.page) {
+        setTimeout(() => showPage(pd.page), pd.txns ? pd.txns.length * 150 + 200 : 200);
+      }
+      if (pd.refreshBudgets) setTimeout(() => loadBudgets(), 300);
+    }
+
+  } catch(e) {
+    btn.classList.remove('active');
+    gAddEvent('Step failed: ' + e.message, '#B91C1C');
+  }
+}
+
+async function resetDemo() {
+  gAddEvent('Resetting...', '#C68A0E');
+  try {
+    await fetch(`${API}/api/demo/reset`, {method:'POST'});
+    // Reset all buttons
+    document.querySelectorAll('.demo-step-btn').forEach(b => b.classList.remove('done', 'active'));
+    // Reset press counters
+    document.querySelectorAll('.demo-press-count').forEach(el => el.textContent = '0');
+    // Reset month badge
+    const badge = document.getElementById('demoMonthBadge');
+    if (badge) badge.textContent = 'Month 0 \u00b7 March 2025';
+
+    const gRes = await fetch(`${API}/api/kg/visualize`);
+    gRenderGraph(await gRes.json());
+    document.getElementById('gNodeCount').textContent = '1';
+    document.getElementById('gEdgeCount').textContent = '0';
+
+    // Reset phone — fetch live balance from KG
+    document.getElementById('txnList').innerHTML = '';
+    cardFrozen = false;
+    loadAccounts();
+    loadTransactions();
+    showPage('home');
+    phoneToast('\ud83e\udde0', 'Demo reset \u2014 Month 0', 'info');
+
+    gAddEvent('Graph reset \u2014 start fresh', '#C68A0E');
+  } catch(e) { gAddEvent('Reset failed', '#B91C1C'); }
+}
+
+async function gSeedDemo() {
+  // Run monthly cycle 3 times to build patterns
+  const monthlyBtns = document.querySelectorAll('.demo-step-btn[data-repeatable="true"]');
+  for (let month = 0; month < 3; month++) {
+    for (const btn of monthlyBtns) {
+      await runDemoStep(btn);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  }
+  // Run one-shot steps
+  const oneshotBtns = document.querySelectorAll('.demo-step-btn:not([data-repeatable])');
+  for (const btn of oneshotBtns) {
+    if (!btn.classList.contains('done')) {
+      await runDemoStep(btn);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  }
+}
+
+function gShowIngestModal() { document.getElementById('gIngestModal').classList.add('active'); }
+function gShowQueryModal() { document.getElementById('gQueryModal').classList.add('active'); }
+function gShowScenarioModal() { document.getElementById('gScenarioModal').classList.add('active'); }
+function gCloseModals() { document.querySelectorAll('.graph-modal-overlay').forEach(m => m.classList.remove('active')); }
+
+async function gIngestTransaction() {
+  const merchant = document.getElementById('gIngMerchant').value || 'Test Merchant';
+  const amount = parseFloat(document.getElementById('gIngAmount').value) || 500;
+  const category = document.getElementById('gIngCategory').value || 'Unknown';
+  const time = document.getElementById('gIngTime').value || '12:00';
+  gCloseModals();
+  gAddEvent(`Ingesting: ${merchant} R${amount}`, '#007A6E');
+  try {
+    await fetch(`${API}/api/kg/ingest`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({merchant, amount, category, time})});
+    const gRes = await fetch(`${API}/api/kg/visualize`);
+    gRenderGraph(await gRes.json());
+    gAddEvent(`Ingested: ${merchant}`, '#007A6E');
+  } catch(e) { gAddEvent('Ingest failed', '#B91C1C'); }
+}
+
+async function gQueryBrain() {
+  const text = document.getElementById('gQueryText').value || 'What do you know about me?';
+  gCloseModals();
+  gAddEvent(`Query: "${text}"`, '#8B5CF6');
+  try {
+    const res = await fetch(`${API}/api/kg/query`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+    const data = await res.json();
+    document.getElementById('gResponseTitle').textContent = 'Brain Response';
+    document.getElementById('gResponseText').textContent = data.text || JSON.stringify(data.data);
+    document.getElementById('gResponse').style.display = 'block';
+  } catch(e) { gAddEvent('Query failed', '#B91C1C'); }
+}
+
+async function gRunScenario() {
+  const type = document.getElementById('gScenarioType').value;
+  gCloseModals();
+  const configs = {
+    cancel_subscription: {type:'cancel_subscription', merchant:'Netflix SA'},
+    reduce_spending: {type:'reduce_spending', category:'Food Delivery', percentage:30},
+    emergency_fund: {type:'emergency_fund', months:3},
+    savings_goal: {type:'savings_goal', name:'Emergency Fund', target:50000, monthly:3000}
+  };
+  gAddEvent(`Scenario: ${type}`, '#059669');
+  try {
+    const res = await fetch(`${API}/api/kg/scenario`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(configs[type] || configs.cancel_subscription)});
+    const data = await res.json();
+    document.getElementById('gResponseTitle').textContent = 'Scenario Result';
+    document.getElementById('gResponseText').textContent = `${data.recommendation || ''}\nMonthly: ${data.impact?.monthly || 'N/A'}\nAnnual: ${data.impact?.annual || 'N/A'}`;
+    document.getElementById('gResponse').style.display = 'block';
+    const gRes = await fetch(`${API}/api/kg/visualize`);
+    gRenderGraph(await gRes.json());
+  } catch(e) { gAddEvent('Scenario failed', '#B91C1C'); }
+}
+
+// ==================== TESTING TAB ====================
+function tShowResult(card, html) {
+  const r = card.querySelector('.trig-result');
+  r.innerHTML = html;
+  r.classList.add('visible');
+}
+
+async function tTrigClassify(card, merchant, amount, time) {
+  card.classList.add('active');
+  addLog('process', `Classify: ${merchant} R${amount}`);
+  try {
+    const res = await fetch(`${API}/api/classify`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({merchant, amount, time})});
+    const v = await res.json();
+    tShowResult(card, `<span class="v-inline v-${v.verdict}">${v.verdict} ${(v.confidence*100).toFixed(0)}%</span><br>${v.reasoning}`);
+    addLog(v.verdict==='BLOCK'?'critical':'safe', `[${v.verdict}] ${merchant} R${amount}`);
+  } catch(e) { tShowResult(card, 'Error: Server offline'); }
+  setTimeout(() => card.classList.remove('active'), 1000);
+}
+
+async function tTrigVoice(card, text) {
+  card.classList.add('active');
+  addLog('process', `Voice: "${text}"`);
+  try {
+    const res = await fetch(`${API}/api/voice`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+    const data = await res.json();
+    tShowResult(card, `<strong>${data.command}</strong><br>${data.response}`);
+    addLog('safe', `Voice: ${data.command}`);
+  } catch(e) { tShowResult(card, 'Error: Server offline'); }
+  setTimeout(() => card.classList.remove('active'), 1000);
+}
+
+async function tTrigTask(card, text, priority) {
+  card.classList.add('active');
+  addLog('action', `Task: ${text}`);
+  try {
+    const res = await fetch(`${API}/api/tasks`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text, priority, source:'Testing'})});
+    const data = await res.json();
+    tShowResult(card, `Task #${data.id}: ${data.text}`);
+  } catch(e) { tShowResult(card, 'Error: Server offline'); }
+  setTimeout(() => card.classList.remove('active'), 1000);
+}
+
+async function tTrigChat(card, text) {
+  card.classList.add('active');
+  addLog('process', `Chat: "${text}"`);
+  try {
+    const res = await fetch(`${API}/api/chat`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+    const data = await res.json();
+    tShowResult(card, data.response);
+  } catch(e) { tShowResult(card, 'Error: Server offline'); }
+  setTimeout(() => card.classList.remove('active'), 1000);
+}
+
+async function tTrigSeed(card) {
+  card.classList.add('active');
+  addLog('process', 'Seeding KG...');
+  try {
+    const res = await fetch(`${API}/api/kg/seed`, {method:'POST'});
+    const data = await res.json();
+    tShowResult(card, `${data.stats.total_nodes} nodes, ${data.stats.total_edges} edges`);
+    addLog('safe', `KG seeded: ${data.stats.total_nodes} nodes`);
+  } catch(e) { tShowResult(card, 'Error: Server offline'); }
+  setTimeout(() => card.classList.remove('active'), 1000);
+}
+
+async function tTrigQuery(card, text) {
+  card.classList.add('active');
+  addLog('process', `KG: "${text}"`);
+  try {
+    const res = await fetch(`${API}/api/kg/query`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+    const data = await res.json();
+    tShowResult(card, `<strong>${data.intent}</strong><br>${data.text}`);
+  } catch(e) { tShowResult(card, 'Error: Server offline'); }
+  setTimeout(() => card.classList.remove('active'), 1000);
+}
+
+async function tTrigScenario(card, type, params) {
+  card.classList.add('active');
+  addLog('process', `Scenario: ${type}`);
+  try {
+    const res = await fetch(`${API}/api/kg/scenario`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({type, ...params})});
+    const data = await res.json();
+    tShowResult(card, `${data.recommendation || ''}<br>Monthly: ${data.impact?.monthly || 'N/A'}`);
+  } catch(e) { tShowResult(card, 'Error: Server offline'); }
+  setTimeout(() => card.classList.remove('active'), 1000);
+}
+
+async function tLiveClassify() {
+  const merchant = document.getElementById('tLiveMerchant').value || 'Test Merchant';
+  const amount = parseFloat(document.getElementById('tLiveAmount').value) || 1000;
+  const time = document.getElementById('tLiveTime').value || '12:00';
+  const result = document.getElementById('tLiveClassifyResult');
+  result.innerHTML = '<div class="spinner">Analyzing...</div>';
+  addLog('process', `Live: ${merchant} R${amount}`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(`${API}/api/classify`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({merchant, amount, time}), signal: controller.signal});
+    clearTimeout(timer);
+    const v = await res.json();
+    let html = `<span class="v-inline v-${v.verdict}">${v.verdict} ${(v.confidence*100).toFixed(0)}%</span><br>${v.reasoning}`;
+    if (v.fraud_flags && v.fraud_flags.length) html += `<br><span style="color:#F59E0B;font-size:9px">Flags: ${v.fraud_flags.join(', ')}</span>`;
+    if (v.ai_reasoning) html += `<br><span style="color:rgba(255,255,255,0.5);font-size:9px">${v.ai_reasoning}</span>`;
+    result.innerHTML = html;
+  } catch(e) {
+    clearTimeout(timer);
+    result.innerHTML = e.name === 'AbortError' ? 'Timed out — AI model may be loading. Try again.' : 'Error: Server offline';
+  }
+}
+
+async function tLiveQuery() {
+  const text = document.getElementById('tLiveQuery').value || 'What do you know about me?';
+  const result = document.getElementById('tLiveQueryResult');
+  result.innerHTML = 'Querying...';
+  addLog('process', `Live: "${text}"`);
+  try {
+    const res = await fetch(`${API}/api/kg/query`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text})});
+    const data = await res.json();
+    result.innerHTML = `<strong>${data.intent}</strong><br>${data.text}`;
+  } catch(e) { result.innerHTML = 'Error: Server offline'; }
+}
+
+// ==================== SIMULATOR CONTROLS ====================
+async function toggleSim() {
+  if (simRunning) {
+    try {
+      const res = await fetch(`${API}/api/simulator/stop`, {method:'POST'});
+      const data = await res.json();
+      simRunning = false;
+      updateSimUI();
+      addLog('system', `Simulator stopped after ${data.months_simulated} months`);
+      gAddEvent(`Sim stopped: ${data.months_simulated} months`, '#C68A0E');
+      // Refresh everything
+      loadAccounts(); loadTransactions(); loadHealthScore(); loadInsights();
+    } catch(e) { addLog('warning', 'Failed to stop simulator'); }
+  } else {
+    try {
+      const res = await fetch(`${API}/api/simulator/start`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({speed: simSpeed})
+      });
+      const data = await res.json();
+      simRunning = true;
+      updateSimUI();
+      addLog('system', `Life simulator started (${simSpeed}x speed)`);
+      gAddEvent('Simulator started', '#10B981');
+    } catch(e) { addLog('warning', 'Failed to start simulator'); }
+  }
+}
+
+function updateSimUI() {
+  const dot = document.getElementById('simDot');
+  const btn = document.getElementById('simPlayBtn');
+  const status = document.getElementById('simStatusText');
+  const ticker = document.getElementById('dashTicker');
+  if (simRunning) {
+    dot.className = 'sim-dot running';
+    btn.textContent = 'Stop';
+    btn.className = 'sim-play stop';
+    status.textContent = `Running ${simSpeed}x`;
+    if (ticker) ticker.style.display = 'flex';
+  } else {
+    dot.className = 'sim-dot';
+    btn.textContent = 'Start Sim';
+    btn.className = 'sim-play';
+    status.textContent = 'Idle';
+    if (ticker) ticker.style.display = 'none';
+  }
+}
+
+async function setSimSpeed(speed) {
+  simSpeed = speed;
+  document.querySelectorAll('.sim-speed-btn').forEach(b => {
+    b.classList.toggle('active', parseFloat(b.textContent) === speed);
+  });
+  if (simRunning) {
+    try {
+      await fetch(`${API}/api/simulator/speed`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({speed})
+      });
+      addLog('info', `Sim speed: ${speed}x`);
+    } catch(e) {}
+  }
+  updateSimUI();
+}
+
+function handleSimPhase(msg) {
+  const phase = msg.phase || '';
+  const day = msg.day || 0;
+  const month = msg.month || '';
+  const progress = Math.min((day / 30) * 100, 100);
+  document.getElementById('simProgress').style.width = progress + '%';
+  document.getElementById('simMonth').textContent = month;
+  document.getElementById('simStatusText').textContent = `${phase.replace(/_/g,' ')} D${day}`;
+  const ticker = document.getElementById('dashTickerText');
+  if (ticker) ticker.textContent = `${phase.replace(/_/g,' ')} - Day ${day} - ${month}`;
+  gAddEvent(`${phase}: Day ${day}`, '#007A6E');
+}
+
+function handleSimAlert(msg) {
+  const alert = msg.alert || {};
+  simToast(alert.toast || alert.alert_type || 'Alert triggered',
+    alert.risk === 'critical' ? 'fraud' : 'alert');
+  // Refresh phone
+  loadAccounts();
+  loadTransactions();
+  loadAlerts();
+}
+
+function handleSimInsights(msg) {
+  const insights = msg.insights || [];
+  renderInsights(insights);
+  if (insights.length > 0) {
+    simToast(`${insights.length} new AI insight${insights.length > 1 ? 's' : ''} detected`, 'insight');
+  }
+}
+
+function simToast(text, type = 'phase') {
+  const container = document.getElementById('simToastContainer');
+  const item = document.createElement('div');
+  item.className = `sim-toast-item ${type}`;
+  const icons = {fraud: '\uD83D\uDEA8', alert: '\u26A0\uFE0F', insight: '\uD83E\udDE0', phase: '\u23F1\uFE0F'};
+  item.innerHTML = `<span>${icons[type] || '\u2139\uFE0F'}</span><span>${text}</span>`;
+  container.appendChild(item);
+  setTimeout(() => item.remove(), 4000);
+  // Keep max 5
+  while (container.children.length > 5) container.firstChild.remove();
+}
+
+// ==================== HEALTH SCORE ====================
+async function loadHealthScore() {
+  try {
+    const res = await fetch(`${API}/api/health`);
+    const data = await res.json();
+    renderHealthScore(data);
+  } catch(e) {}
+}
+
+function renderHealthScore(data) {
+  if (!data || data.score === undefined) return;
+  const score = data.score;
+  const grade = data.grade;
+  const circumference = 314.16; // 2 * PI * 50
+  const offset = circumference * (1 - score / 100);
+
+  const ring = document.getElementById('healthRingFill');
+  const numEl = document.getElementById('healthNum');
+  const gradeEl = document.getElementById('healthGrade');
+
+  // Color based on score
+  const color = score >= 75 ? '#10B981' : score >= 50 ? '#F59E0B' : '#EF4444';
+  ring.setAttribute('stroke', color);
+  ring.setAttribute('stroke-dashoffset', offset);
+  numEl.textContent = score;
+  numEl.style.color = color;
+  gradeEl.textContent = grade;
+  gradeEl.style.color = color;
+
+  // Breakdown
+  const bd = document.getElementById('healthBreakdown');
+  if (data.breakdown && data.details) {
+    const maxes = {dti:25, buffer:20, budgets:20, insurance:15, investments:10, habits:10};
+    const labels = {dti:'DTI', buffer:'Buffer', budgets:'Budgets', insurance:'Coverage', investments:'Invest', habits:'Habits'};
+    bd.innerHTML = Object.entries(data.breakdown).map(([k, v]) => {
+      const max = maxes[k] || 10;
+      const pct = (v / max * 100);
+      const c = pct >= 70 ? '#10B981' : pct >= 40 ? '#F59E0B' : '#EF4444';
+      return `<div class="health-factor">
+        <div class="health-factor-bar"><div class="health-factor-fill" style="width:${pct}%;background:${c}"></div></div>
+        <div class="health-factor-name">${labels[k] || k}</div>
+        <div class="health-factor-val">${v}/${max}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Update months stat
+  const monthsEl = document.getElementById('dStatMonths');
+  if (monthsEl && data.summary) {
+    const m = data.summary.match(/(\d+\.\d+) months/);
+    if (m) monthsEl.textContent = m[1];
+  }
+}
+
+// ==================== LOAN ELIGIBILITY ====================
+async function checkLoan() {
+  const amount = parseFloat(document.getElementById('loanAmount').value) || 100000;
+  const term = parseInt(document.getElementById('loanTerm').value) || 60;
+  const type = document.getElementById('loanType').value;
+  const result = document.getElementById('loanResult');
+  result.className = 'loan-result visible';
+  result.innerHTML = '<div style="text-align:center;padding:12px;color:rgba(255,255,255,0.4);font-size:11px">Assessing...</div>';
+
+  try {
+    const res = await fetch(`${API}/api/loan/eligibility`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({amount, term_months: term, loan_type: type})
+    });
+    const d = await res.json();
+    result.innerHTML = `
+      <div class="loan-verdict">
+        <div class="loan-verdict-badge ${d.verdict}">${d.verdict}</div>
+      </div>
+      <div class="loan-stats">
+        <div class="loan-stat"><div class="loan-stat-val">R${d.estimated_payment.toLocaleString('en-ZA',{maximumFractionDigits:0})}</div><div class="loan-stat-label">Monthly Payment</div></div>
+        <div class="loan-stat"><div class="loan-stat-val">${d.new_dti.toFixed(0)}%</div><div class="loan-stat-label">New DTI</div></div>
+        <div class="loan-stat"><div class="loan-stat-val">R${d.total_interest.toLocaleString('en-ZA',{maximumFractionDigits:0})}</div><div class="loan-stat-label">Total Interest</div></div>
+        <div class="loan-stat"><div class="loan-stat-val">R${d.max_affordable.toLocaleString('en-ZA',{maximumFractionDigits:0})}</div><div class="loan-stat-label">Max Affordable</div></div>
+      </div>
+      <div class="loan-factors">
+        ${d.factors.map(f => `<div class="loan-factor ${f.impact}">
+          <div class="loan-factor-icon">${f.impact === 'positive' ? '\u2713' : f.impact === 'negative' ? '\u2717' : '\u26A0'}</div>
+          <div class="loan-factor-text">${f.factor}</div>
+          <div class="loan-factor-detail">${f.detail}</div>
+        </div>`).join('')}
+      </div>`;
+    addLog(d.verdict === 'APPROVED' ? 'safe' : d.verdict === 'CONDITIONAL' ? 'warning' : 'critical',
+      `Loan: R${amount.toLocaleString()} ${type} -> ${d.verdict} (DTI ${d.new_dti.toFixed(0)}%)`);
+  } catch(e) {
+    result.innerHTML = '<div style="text-align:center;color:#F87171;font-size:11px">Failed to check eligibility</div>';
+  }
+}
+
+// ==================== INSIGHTS ====================
+async function loadInsights() {
+  try {
+    const res = await fetch(`${API}/api/insights`);
+    const data = await res.json();
+    renderInsights(data.insights || []);
+  } catch(e) {}
+}
+
+function renderInsights(insights) {
+  const el = document.getElementById('insightsList');
+  const countEl = document.getElementById('insightCount');
+  if (!insights || insights.length === 0) {
+    el.innerHTML = '<div style="font-size:10px;color:rgba(255,255,255,0.3);padding:8px;text-align:center">No insights yet. Run simulator to generate.</div>';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+  if (countEl) countEl.textContent = `${insights.length} active`;
+  el.innerHTML = insights.map(i => `
+    <div class="insight-card severity-${i.severity || 'info'}">
+      <div class="insight-icon">${i.icon || '\uD83D\uDCA1'}</div>
+      <div class="insight-body">
+        <div class="insight-title">${i.title}</div>
+        <div class="insight-text">${i.body}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ==================== SMART TRANSFER ====================
+function loadTransferAccounts() {
+  const el = document.getElementById('transferAccounts');
+  if (!el || phoneAccounts.length < 2) {
+    if (el) el.innerHTML = '<div style="font-size:10px;color:rgba(255,255,255,0.3);width:100%;text-align:center">Need 2+ accounts</div>';
+    return;
+  }
+  el.innerHTML = phoneAccounts.map((a, i) => `
+    <div class="transfer-acc ${i === 0 ? 'selected' : ''}" data-id="${a.id}" onclick="selectTransferAcc(this)">
+      <div class="transfer-acc-name">${a.name}</div>
+      <div class="transfer-acc-bal">R${a.balance.toLocaleString('en-ZA',{minimumFractionDigits:0})}</div>
+    </div>
+    ${i === 0 ? '<div class="transfer-arrow">\u2192</div>' : ''}
+  `).join('');
+}
+
+function selectTransferAcc(el) {
+  const accs = document.querySelectorAll('#transferAccounts .transfer-acc');
+  // If first is selected, select second; otherwise swap
+  const wasSelected = el.classList.contains('selected');
+  accs.forEach(a => a.classList.remove('selected'));
+  if (!wasSelected) el.classList.add('selected');
+  else accs[0].classList.add('selected');
+}
+
+async function doTransfer() {
+  const accs = document.querySelectorAll('#transferAccounts .transfer-acc');
+  const selected = document.querySelector('#transferAccounts .transfer-acc.selected');
+  if (!selected || accs.length < 2) return;
+
+  const fromId = selected.dataset.id;
+  const toId = [...accs].find(a => a.dataset.id !== fromId)?.dataset.id;
+  const amount = parseFloat(document.getElementById('transferAmount').value) || 0;
+  const ref = document.getElementById('transferRef').value || '';
+  const result = document.getElementById('transferResult');
+
+  if (!amount || !toId) {
+    result.className = 'transfer-result error';
+    result.textContent = 'Enter an amount and ensure two accounts exist.';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/transfer`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({from_id: fromId, to_id: toId, amount, reference: ref})
+    });
+    const data = await res.json();
+    if (data.success) {
+      result.className = 'transfer-result success';
+      result.textContent = data.message;
+      loadAccounts();
+      setTimeout(() => loadTransferAccounts(), 500);
+    } else {
+      result.className = 'transfer-result error';
+      result.textContent = data.error || 'Transfer failed';
+    }
+  } catch(e) {
+    result.className = 'transfer-result error';
+    result.textContent = 'Server error';
+  }
+}
+
+// ==================== INIT ====================
+initSpeechRecognition();
+// TTS voice init handled by onvoiceschanged above
+// Load live data from KG
+loadAccounts();
+loadTransactions();
+loadDocs();
+loadTasks();
+// Sync simulator state
+fetch(`${API}/api/simulator/status`).then(r => r.json()).then(s => {
+  simRunning = s.running || false;
+  if (s.months_simulated) document.getElementById('dStatMonths').textContent = s.months_simulated;
+  updateSimUI();
+}).catch(() => {});
+</script>
+</body>
+</html>

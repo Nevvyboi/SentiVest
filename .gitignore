@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+.env
+*.pem
+*.db
+*.log
+memory.json
+.claude/
+node_modules/
+.DS_Store
+Thumbs.db
