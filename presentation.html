@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentiVest — Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#003B5C;--navy-deep:#001A2E;--teal:#007A6E;--teal-bright:#00A896;
+  --white:#FFFFFF;--off-white:#F8FAFB;--bg:#FFFFFF;
+  --text:#0F172A;--text-mid:#334155;--text-light:#64748B;
+  --border:#E2E8F0;--border-light:#F1F5F9;
+  --red:#DC2626;--red-bg:#FEF2F2;
+  --orange:#EA580C;--orange-bg:#FFF7ED;
+  --green:#059669;--green-bg:#ECFDF5;
+  --blue:#2563EB;--blue-bg:#EFF6FF;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--white);font-family:'Inter',sans-serif;color:var(--text)}
+
+/* Slide container */
+.deck{width:100%;height:100%;position:relative}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:80px 120px;opacity:0;visibility:hidden;transition:opacity 0.45s ease,transform 0.45s ease;transform:translateX(60px)}
+.slide.active{opacity:1;visibility:visible;transform:translateX(0)}
+.slide.prev{opacity:0;transform:translateX(-60px)}
+
+/* Backgrounds — high contrast */
+.bg-white{background:var(--white)}
+.bg-light{background:var(--off-white)}
+.bg-navy{background:var(--navy);color:var(--white)}
+.bg-dark{background:var(--navy-deep);color:var(--white)}
+.bg-teal{background:var(--teal);color:var(--white)}
+.bg-black{background:#0A0A0A;color:var(--white)}
+
+/* Subtle background decoration */
+.bg-dots{position:absolute;inset:0;pointer-events:none;opacity:0.03;background-image:radial-gradient(circle,var(--navy) 1px,transparent 1px);background-size:32px 32px}
+
+/* Typography — LARGE for back-row readability */
+h1{font-size:80px;font-weight:900;line-height:1.05;letter-spacing:-3px;color:var(--text)}
+h2{font-size:56px;font-weight:800;line-height:1.1;letter-spacing:-2px;color:var(--text)}
+h3{font-size:40px;font-weight:700;line-height:1.2;letter-spacing:-1px;color:var(--text)}
+p{font-size:24px;line-height:1.6;color:var(--text-mid)}
+.subtitle{font-size:28px;color:var(--text-mid);font-weight:400;margin-top:16px}
+.small{font-size:18px;color:var(--text-light)}
+.label{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--teal);margin-bottom:20px}
+.highlight{color:var(--teal)}
+.red{color:var(--red)}
+/* On dark slides */
+.bg-navy h1,.bg-navy h2,.bg-navy h3,.bg-dark h1,.bg-dark h2,.bg-dark h3,.bg-black h1,.bg-black h2,.bg-black h3,.bg-teal h1,.bg-teal h2,.bg-teal h3{color:var(--white)}
+.bg-navy p,.bg-dark p,.bg-black p,.bg-teal p{color:rgba(255,255,255,0.8)}
+.bg-navy .label,.bg-dark .label{color:var(--teal-bright)}
+.bg-teal .label{color:rgba(255,255,255,0.7)}
+.bg-navy .highlight,.bg-dark .highlight,.bg-black .highlight{color:var(--teal-bright)}
+.bg-navy .text-muted,.bg-dark .text-muted{color:rgba(255,255,255,0.5)}
+.bg-navy .small,.bg-dark .small,.bg-black .small{color:rgba(255,255,255,0.5)}
+
+/* Layout */
+.left-align{align-items:flex-start;text-align:left}
+.center{text-align:center}
+.full-width{width:100%}
+.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}.mt-32{margin-top:32px}.mt-48{margin-top:48px}.mt-64{margin-top:64px}
+.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:60px;width:100%;align-items:center}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px;width:100%}
+
+/* Cards — light theme */
+.card{background:var(--white);border:2px solid var(--border);border-radius:16px;padding:32px;transition:border-color 0.2s}
+.card-accent{border-left:4px solid var(--teal)}
+.card-icon{font-size:36px;margin-bottom:12px}
+.card-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px}
+.card-desc{font-size:16px;color:var(--text-mid);line-height:1.6}
+.card-glow{border-color:var(--teal);box-shadow:0 0 0 4px rgba(0,122,110,0.08)}
+/* Dark slide cards */
+.bg-dark .card,.bg-navy .card{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12)}
+.bg-dark .card-title,.bg-navy .card-title{color:var(--white)}
+.bg-dark .card-desc,.bg-navy .card-desc{color:rgba(255,255,255,0.6)}
+.bg-dark .card-glow,.bg-navy .card-glow{border-color:var(--teal-bright);box-shadow:0 0 0 4px rgba(0,168,150,0.15)}
+
+/* Pill cards (agent capabilities) */
+.pill-card{display:flex;align-items:center;gap:16px;padding:20px 28px;border-radius:14px;border:2px solid var(--border);background:var(--white)}
+.pill-icon{font-size:28px;flex-shrink:0}
+.pill-label{font-size:20px;font-weight:700}
+.pill-desc{font-size:16px;color:var(--text-mid)}
+.pill-card.teal{border-color:var(--teal);background:rgba(0,122,110,0.04)}.pill-card.teal .pill-label{color:var(--teal)}
+.pill-card.blue{border-color:var(--blue);background:var(--blue-bg)}.pill-card.blue .pill-label{color:var(--blue)}
+.pill-card.orange{border-color:var(--orange);background:var(--orange-bg)}.pill-card.orange .pill-label{color:var(--orange)}
+.pill-card.purple{border-color:var(--purple);background:var(--purple-bg)}.pill-card.purple .pill-label{color:var(--purple)}
+.pill-card.green{border-color:var(--green);background:var(--green-bg)}.pill-card.green .pill-label{color:var(--green)}
+
+/* Comparison table — high contrast */
+.comp-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:24px;font-size:18px}
+.comp-table th{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:14px 24px;text-align:left;border-bottom:3px solid var(--border);color:var(--text-light)}
+.comp-table td{padding:16px 24px;border-bottom:1px solid var(--border-light);color:var(--text-mid)}
+.comp-table td:first-child{font-weight:700;color:var(--text)}
+.comp-table .col-hl{background:rgba(0,122,110,0.06)}
+.comp-table .col-hl td{color:var(--teal);font-weight:600}
+.comp-table .col-hl th{color:var(--teal);background:rgba(0,122,110,0.06)}
+.comp-table tr:last-child td{border-bottom:none}
+
+/* Shift table */
+.shift-table{width:100%;margin-top:32px}
+.shift-row{display:flex;align-items:center;padding:18px 0;border-bottom:2px solid var(--border-light)}
+.shift-row:last-child{border-bottom:none}
+.shift-old{flex:1;font-size:22px;color:var(--text-light);text-decoration:line-through;text-decoration-color:var(--border)}
+.shift-arrow{padding:0 28px;font-size:24px;color:var(--teal)}
+.shift-new{flex:1;font-size:22px;font-weight:700;color:var(--text)}
+.shift-new.accent{color:var(--teal)}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;width:100%;margin-top:32px}
+.stat-card{background:var(--white);border:2px solid var(--border);border-radius:14px;padding:28px;text-align:center}
+.stat-num{font-size:48px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--teal)}
+.stat-label{font-size:15px;color:var(--text-mid);margin-top:8px;font-weight:600}
+/* Dark */
+.bg-dark .stat-card{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
+.bg-dark .stat-num{color:var(--teal-bright)}
+.bg-dark .stat-label{color:rgba(255,255,255,0.6)}
+
+/* Tech stack */
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;margin-top:28px}
+.tech-item{display:flex;align-items:center;gap:16px;padding:16px 24px;background:var(--off-white);border:1px solid var(--border);border-radius:12px}
+.tech-label{font-size:13px;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;min-width:110px}
+.tech-value{font-size:17px;color:var(--text);font-weight:600}
+
+/* Bullet list — larger for readability */
+.bullets{list-style:none;display:flex;flex-direction:column;gap:18px;margin-top:24px}
+.bullets li{font-size:22px;color:var(--text-mid);display:flex;align-items:flex-start;gap:14px;line-height:1.5}
+.bullets li::before{content:'';width:10px;height:10px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:10px}
+.bullets.red-bullets li::before{background:var(--red)}
+.bullets li strong{color:var(--text)}
+/* Dark */
+.bg-navy .bullets li,.bg-dark .bullets li{color:rgba(255,255,255,0.8)}
+.bg-navy .bullets li strong,.bg-dark .bullets li strong{color:var(--white)}
+.bg-navy .bullets li::before,.bg-dark .bullets li::before{background:var(--teal-bright)}
+
+/* Flow diagram */
+.flow{display:flex;align-items:center;gap:12px;margin-top:36px;flex-wrap:wrap;justify-content:center}
+.flow-node{padding:14px 28px;border-radius:12px;font-size:18px;font-weight:700;background:rgba(0,122,110,0.08);border:2px solid var(--teal);color:var(--teal)}
+.flow-arrow{font-size:24px;color:var(--border)}
+.flow-node.red{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.flow-node.purple{background:var(--purple-bg);border-color:var(--purple);color:var(--purple)}
+
+/* Architecture diagram */
+.arch-layer{width:100%;padding:20px 28px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;font-size:17px;border:2px solid}
+.arch-layer .arch-name{font-weight:800}
+.arch-layer .arch-detail{font-size:14px;font-weight:500}
+.arch-1{background:rgba(0,122,110,0.06);border-color:var(--teal);color:var(--teal)}
+.arch-1 .arch-detail{color:rgba(0,122,110,0.7)}
+.arch-2{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.arch-2 .arch-detail{color:rgba(37,99,235,0.7)}
+.arch-3{background:rgba(0,59,92,0.06);border-color:var(--navy);color:var(--navy)}
+.arch-3 .arch-detail{color:rgba(0,59,92,0.6)}
+.arch-4{background:var(--orange-bg);border-color:var(--orange);color:var(--orange)}
+.arch-4 .arch-detail{color:rgba(234,88,12,0.7)}
+.arch-5{background:var(--off-white);border-color:var(--border);color:var(--text-mid)}
+.arch-5 .arch-detail{color:var(--text-light)}
+.arch-arrow{text-align:center;padding:2px 0;font-size:18px;color:var(--border)}
+
+/* Graph chain nodes */
+.graph-node{padding:10px 20px;border-radius:24px;font-size:16px;font-weight:700;display:inline-block}
+.gn-merchant{background:rgba(0,122,110,0.1);color:var(--teal);border:2px solid var(--teal)}
+.gn-category{background:var(--blue-bg);color:var(--blue);border:2px solid var(--blue)}
+.gn-budget{background:var(--orange-bg);color:var(--orange);border:2px solid var(--orange)}
+.gn-pattern{background:var(--purple-bg);color:var(--purple);border:2px solid var(--purple)}
+.gn-predict{background:var(--green-bg);color:var(--green);border:2px solid var(--green)}
+.graph-edge{font-size:22px;color:var(--border);margin:0 4px}
+
+/* Demo commands */
+.demo-cmd{font-family:'JetBrains Mono',monospace;font-size:20px;padding:16px 28px;background:var(--off-white);border:2px solid var(--border);border-radius:12px;margin:6px 0;display:flex;align-items:center;gap:16px}
+.demo-cmd .cmd-icon{font-size:24px;flex-shrink:0}
+.demo-cmd .cmd-text{color:var(--text);font-weight:500}
+/* Dark */
+.bg-dark .demo-cmd{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12)}
+.bg-dark .demo-cmd .cmd-text{color:var(--white)}
+
+/* Big quote */
+.big-quote{font-size:48px;font-weight:700;line-height:1.3;color:var(--white);text-align:center;max-width:900px}
+.big-quote .qm{font-size:72px;color:var(--teal-bright);line-height:0;vertical-align:sub;font-weight:900}
+
+/* Slide counter */
+.slide-counter{position:fixed;bottom:24px;right:32px;font-size:14px;font-family:'JetBrains Mono',monospace;color:var(--text-light);z-index:100}
+.bg-dark ~ .slide-counter,.bg-navy ~ .slide-counter,.bg-black ~ .slide-counter{color:rgba(255,255,255,0.3)}
+
+/* Progress bar */
+.progress-bar{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--teal),var(--teal-bright));z-index:100;transition:width 0.4s ease}
+
+/* Fullscreen button */
+.fs-btn{position:fixed;bottom:24px;left:32px;padding:10px 18px;background:var(--off-white);border:1px solid var(--border);border-radius:8px;color:var(--text-mid);font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;z-index:100;transition:all 0.2s}
+.fs-btn:hover{background:var(--teal);color:var(--white);border-color:var(--teal)}
+
+/* Animations */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.slide.active .anim-1{animation:fadeInUp 0.5s ease 0.05s both}
+.slide.active .anim-2{animation:fadeInUp 0.5s ease 0.15s both}
+.slide.active .anim-3{animation:fadeInUp 0.5s ease 0.3s both}
+.slide.active .anim-4{animation:fadeInUp 0.5s ease 0.45s both}
+.slide.active .anim-5{animation:fadeInUp 0.5s ease 0.6s both}
+.slide.active .anim-6{animation:fadeInUp 0.5s ease 0.75s both}
+
+/* Responsive */
+@media(max-width:1200px){
+  h1{font-size:56px}h2{font-size:44px}h3{font-size:32px}
+  .slide{padding:40px 60px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* Presenter notes */
+.presenter-notes{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,0.95);border-top:3px solid var(--teal);padding:16px 32px;font-size:15px;color:rgba(255,255,255,0.8);z-index:200;max-height:130px;overflow-y:auto;backdrop-filter:blur(12px)}
+.presenter-notes.visible{display:block}
+.presenter-notes strong{color:var(--teal-bright)}
+
+/* Dark DB mockup on light slide */
+.db-mock{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text-light);background:var(--off-white);padding:24px;border-radius:12px;border:2px solid var(--border);line-height:1.8}
+.db-mock .db-dim{color:var(--red);font-weight:600;margin-top:8px;display:block}
+
+/* KG side box */
+.kg-box{background:rgba(0,122,110,0.04);padding:24px;border-radius:12px;border:2px solid var(--teal)}
+.kg-box .kg-label{font-size:14px;color:var(--teal);font-weight:600;margin-top:14px}
+
+/* Phone mockup on light bg */
+.phone-mock{width:200px;height:400px;border:3px solid var(--navy);border-radius:28px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,59,92,0.15)}
+.phone-mock-bar{background:var(--navy);padding:6px 14px;font-size:9px;color:rgba(255,255,255,0.8);display:flex;justify-content:space-between}
+.phone-mock-content{flex:1;background:var(--off-white);padding:10px;display:flex;flex-direction:column;gap:6px;font-size:9px;color:var(--text)}
+.phone-mock-nav{display:flex;justify-content:space-around;padding:6px;background:var(--white);border-top:1px solid var(--border);font-size:8px;color:var(--text-light)}
+
+/* Dark slide overrides for comp-table */
+.bg-dark .comp-table th{color:rgba(255,255,255,0.5);border-bottom-color:rgba(255,255,255,0.1)}
+.bg-dark .comp-table td{color:rgba(255,255,255,0.6);border-bottom-color:rgba(255,255,255,0.06)}
+.bg-dark .comp-table td:first-child{color:var(--white)}
+.bg-dark .comp-table .col-hl{background:rgba(0,168,150,0.1)}
+.bg-dark .comp-table .col-hl td,.bg-dark .comp-table .col-hl th{color:var(--teal-bright)}
+
+/* Dark slide overrides for shift table */
+.bg-navy .shift-row{border-bottom-color:rgba(255,255,255,0.08)}
+.bg-navy .shift-old{color:rgba(255,255,255,0.3);text-decoration-color:rgba(255,255,255,0.15)}
+.bg-navy .shift-new{color:var(--white)}
+.bg-navy .shift-arrow{color:var(--teal-bright)}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-counter" id="slideCounter">1 / 20</div>
+<button class="fs-btn" onclick="toggleFullscreen()">F Fullscreen</button>
+<div class="presenter-notes" id="presenterNotes"></div>
+
+<div class="deck" id="deck">
+
+<!-- ============ SLIDE 1: TITLE ============ -->
+<div class="slide bg-white active" data-notes="Welcome everyone. Today I'm presenting SentiVest — an AI-powered private banking agent built on a personal financial knowledge graph.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">AI Banking Agent</div>
+  <h1 class="anim-2">Senti<span class="highlight">Vest</span></h1>
+  <p class="subtitle anim-3">AI Private Banking Agent with a<br>Personal Financial Knowledge Graph</p>
+  <p class="small mt-64 anim-4">Press <strong style="color:var(--teal)">Space</strong> or <strong style="color:var(--teal)">Arrow Keys</strong> to navigate &middot; <strong style="color:var(--teal)">F</strong> fullscreen &middot; <strong style="color:var(--teal)">N</strong> notes</p>
+</div>
+
+<!-- ============ SLIDE 2: THE QUESTION ============ -->
+<div class="slide bg-black" data-notes="Pause after this. Let the audience think. Then say: Banks give you data — rows of transactions. But nobody gives you understanding.">
+  <div class="big-quote anim-1">
+    <span class="qm">"</span>Do you actually understand<br>where your money goes?<span class="qm">"</span>
+  </div>
+</div>
+
+<!-- ============ SLIDE 3: THE PROBLEM ============ -->
+<div class="slide bg-white left-align" data-notes="Walk through each point. These aren't edge cases — this is everyone's reality. Build the pain before the solution.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">The Problem</div>
+  <h2 class="anim-2">Banking apps are <span class="red">passive</span></h2>
+  <ul class="bullets red-bullets anim-3 mt-32">
+    <li>They show data, they don't <strong>think</strong></li>
+    <li>Fraud detection is reactive — you find out <strong>after</strong> the damage</li>
+    <li>Spending, loans, investments, insurance, tax — all <strong>siloed</strong></li>
+    <li>Most people don't know their debt-to-income ratio or financial health</li>
+    <li>You can't talk to your bank at 2am and get a <strong>real answer</strong></li>
+  </ul>
+</div>
+
+<!-- ============ SLIDE 4: WHAT IF ============ -->
+<div class="slide bg-navy" data-notes="This is the pivot moment. Pause before revealing. This is where curiosity turns to interest.">
+  <h2 class="anim-1" style="text-align:center">What if your banking app<br>wasn't an app —</h2>
+  <h2 class="anim-2 mt-16" style="text-align:center">but an <span class="highlight">agent</span>?</h2>
+  <p class="mt-32 anim-3" style="font-size:24px;text-align:center;max-width:700px">One that <strong style="color:#fff">thinks</strong>, <strong style="color:#fff">connects dots</strong>, <strong style="color:#fff">remembers you</strong>,<br>and <strong style="color:#fff">acts on your behalf</strong></p>
+</div>
+
+<!-- ============ SLIDE 5: APP vs CHATBOT vs AGENT ============ -->
+<div class="slide bg-white left-align" data-notes="Build from left to right. Apps are dumb. Chatbots are scripted. Agents are autonomous. SentiVest is an agent.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Understanding the difference</div>
+  <h3 class="anim-2 mb-24">App vs Chatbot vs <span class="highlight">AI Agent</span></h3>
+  <table class="comp-table anim-3 full-width">
+    <thead>
+      <tr><th></th><th>Traditional App</th><th>Chatbot</th><th class="col-hl">AI Agent</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Input</td><td>You click buttons</td><td>You ask questions</td><td class="col-hl">Watches everything</td></tr>
+      <tr><td>Memory</td><td>None</td><td>None</td><td class="col-hl">Persistent — learns you</td></tr>
+      <tr><td>Reasoning</td><td>None</td><td>Scripted</td><td class="col-hl">Connects patterns</td></tr>
+      <tr><td>Action</td><td>You decide</td><td>Suggests</td><td class="col-hl">Acts autonomously</td></tr>
+      <tr><td>Proactive</td><td style="color:var(--red)">Never</td><td style="color:var(--red)">Never</td><td class="col-hl" style="color:var(--green);font-weight:800">Warns before you ask</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============ SLIDE 6: WHAT THE AGENT DOES ============ -->
+<div class="slide bg-white left-align" data-notes="Walk through each capability. It's a cycle — perceive, classify, warn, remember, act. Not a one-shot response.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">SentiVest Agent</div>
+  <h3 class="anim-2 mb-24">What the agent does</h3>
+  <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:750px">
+    <div class="pill-card teal anim-2"><span class="pill-icon">&#128065;</span><div><div class="pill-label">Perceives</div><div class="pill-desc">Transactions flow in real-time</div></div></div>
+    <div class="pill-card blue anim-3"><span class="pill-icon">&#9878;&#65039;</span><div><div class="pill-label">Classifies</div><div class="pill-desc">Safe, Flag, Alert, Block — with fraud scoring</div></div></div>
+    <div class="pill-card orange anim-4"><span class="pill-icon">&#9888;&#65039;</span><div><div class="pill-label">Warns</div><div class="pill-desc">Budget exceeded, suspicious activity, low balance</div></div></div>
+    <div class="pill-card purple anim-5"><span class="pill-icon">&#129504;</span><div><div class="pill-label">Remembers</div><div class="pill-desc">Your preferences, goals, habits across sessions</div></div></div>
+    <div class="pill-card green anim-6"><span class="pill-icon">&#9889;</span><div><div class="pill-label">Acts</div><div class="pill-desc">Freeze cards, make payments, transfer funds</div></div></div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 7: WHY KNOWLEDGE GRAPH ============ -->
+<div class="slide bg-white" data-notes="Key slide. A database stores records in rows. A knowledge graph stores relationships. Finances are inherently connected — a graph models that naturally.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">The Brain</div>
+  <h2 class="anim-2">Why a <span class="highlight">Knowledge Graph</span>?</h2>
+  <div class="two-col mt-48">
+    <div class="anim-3">
+      <h3 style="font-size:24px;color:var(--text-light);margin-bottom:16px">Database</h3>
+      <div class="db-mock">
+        | id | merchant &nbsp;&nbsp;| amount | date &nbsp;|<br>
+        |----|-----------|--------|-------|<br>
+        | 1 &nbsp;| Woolworths| R850 &nbsp;| 03/01 |<br>
+        | 2 &nbsp;| Shell &nbsp;&nbsp;&nbsp;&nbsp;| R620 &nbsp;| 03/02 |<br>
+        | 3 &nbsp;| Takealot &nbsp;| R2400 | 03/03 |
+        <span class="db-dim">Flat. Isolated. No connections.</span>
+      </div>
+    </div>
+    <div class="anim-4">
+      <h3 style="font-size:24px;color:var(--teal);margin-bottom:16px">Knowledge Graph</h3>
+      <div class="kg-box">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="graph-node gn-merchant">Woolworths</span>
+            <span class="graph-edge">&#8594;</span>
+            <span class="graph-node gn-category">Groceries</span>
+            <span class="graph-edge">&#8594;</span>
+            <span class="graph-node gn-budget">Food Budget</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-left:48px">
+            <span class="graph-edge">&#8594;</span>
+            <span class="graph-node gn-pattern">Monthly Pattern</span>
+            <span class="graph-edge">&#8594;</span>
+            <span class="graph-node gn-predict">Prediction</span>
+          </div>
+        </div>
+        <div class="kg-label">Connected. Traversable. Alive.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 8: GRAPH KEY INSIGHT ============ -->
+<div class="slide bg-navy" data-notes="The punchline — databases tell you what happened, graphs tell you why it matters. The graph IS the agent's brain.">
+  <div class="anim-1">
+    <p style="font-size:30px;color:rgba(255,255,255,0.5);margin-bottom:28px">A database tells you <strong style="color:#fff">what happened</strong></p>
+  </div>
+  <div class="anim-2">
+    <p style="font-size:38px;color:var(--white);font-weight:700;margin-bottom:48px">A knowledge graph tells you <span class="highlight">why it matters</span><br>and <span class="highlight">what to do about it</span></p>
+  </div>
+  <div class="anim-3" style="padding:24px 48px;border:2px solid var(--teal-bright);border-radius:14px;background:rgba(0,168,150,0.1)">
+    <p style="font-size:26px;color:var(--teal-bright);font-weight:800">The graph IS the agent's brain.</p>
+  </div>
+</div>
+
+<!-- ============ SLIDE 9: WHY UNIQUE ============ -->
+<div class="slide bg-white left-align" data-notes="Three approaches side by side. Banks = records. Fintechs = visuals. SentiVest = reasoning. Different paradigm.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Why this is different</div>
+  <h3 class="anim-2 mb-24">Three approaches to banking</h3>
+  <div class="three-col anim-3">
+    <div class="card" style="opacity:0.55">
+      <div class="card-icon">&#127974;</div>
+      <div class="card-title">Banks</div>
+      <div class="card-desc">Databases<br>Good for records<br>Static</div>
+    </div>
+    <div class="card" style="opacity:0.55">
+      <div class="card-icon">&#128202;</div>
+      <div class="card-title">Fintechs</div>
+      <div class="card-desc">Dashboards<br>Good for visuals<br>Pretty</div>
+    </div>
+    <div class="card card-glow">
+      <div class="card-icon">&#129504;</div>
+      <div class="card-title" style="color:var(--teal)">SentiVest</div>
+      <div class="card-desc"><strong style="color:var(--text)">Knowledge Graph</strong><br>Good for <strong style="color:var(--text)">reasoning</strong><br><strong style="color:var(--teal)">Alive</strong> — grows with you</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 10: INTRODUCING SENTIVEST ============ -->
+<div class="slide bg-white left-align" data-notes="Quick feature rundown before the demo. Don't linger — the demo will show all of this.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">The Solution</div>
+  <h2 class="anim-2">Introducing <span class="highlight">SentiVest</span></h2>
+  <div class="two-col mt-32">
+    <div>
+      <ul class="bullets anim-3">
+        <li><strong>Voice-first</strong> — talk like you're speaking to a real banker</li>
+        <li><strong>35+ voice commands</strong> with multi-turn conversations</li>
+        <li><strong>Real-time fraud detection</strong> — 100+ merchants</li>
+        <li><strong>Financial health score</strong>, loan eligibility, proactive insights</li>
+        <li><strong>Life simulator</strong> — months of financial life in seconds</li>
+        <li><strong>Built for South Africa</strong> — Investec API, ZAR</li>
+      </ul>
+    </div>
+    <div class="anim-4" style="text-align:center">
+      <div class="phone-mock">
+        <div class="phone-mock-bar"><span>09:41</span><span style="font-weight:700;letter-spacing:1px">SENTIVEST</span><span>87%</span></div>
+        <div class="phone-mock-content">
+          <div style="height:72px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--teal));padding:10px;color:#fff">
+            <div style="font-size:7px;opacity:0.6">PRIVATE BANK</div>
+            <div style="font-size:18px;font-weight:700;margin-top:6px;font-family:'JetBrains Mono'">R34,218</div>
+          </div>
+          <div style="display:flex;gap:4px">
+            <div style="flex:1;padding:6px;border-radius:6px;background:var(--white);text-align:center;font-weight:600;border:1px solid var(--border)">Talk</div>
+            <div style="flex:1;padding:6px;border-radius:6px;background:var(--white);text-align:center;font-weight:600;border:1px solid var(--border)">Pay</div>
+            <div style="flex:1;padding:6px;border-radius:6px;background:var(--white);text-align:center;font-weight:600;border:1px solid var(--border)">Tasks</div>
+          </div>
+          <div style="font-weight:600;padding-top:4px;color:var(--text)">Recent Transactions</div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--white);border-radius:6px;border:1px solid var(--border)"><span>Woolworths</span><span style="color:var(--red);font-weight:700">-R850</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--white);border-radius:6px;border:1px solid var(--border)"><span>Shell Garage</span><span style="color:var(--red);font-weight:700">-R620</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--white);border-radius:6px;border:1px solid var(--border)"><span>ACME Corp</span><span style="color:var(--green);font-weight:700">+R42,500</span></div>
+        </div>
+        <div class="phone-mock-nav"><span>Home</span><span>Ledger</span><span>Chat</span><span>More</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 11: ARCHITECTURE ============ -->
+<div class="slide bg-white left-align" data-notes="Quick walkthrough — voice/chat at top, AI model parses intent, KG is the brain, classifier scores every transaction, infra at the bottom.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">How it works</div>
+  <h3 class="anim-2 mb-24">Architecture</h3>
+  <div style="display:flex;flex-direction:column;width:100%;max-width:820px" class="anim-3">
+    <div class="arch-layer arch-1"><span class="arch-name">Voice / Chat Interface</span><span class="arch-detail">35+ handlers, multi-turn flows, persistent memory</span></div>
+    <div class="arch-arrow">&#9660;</div>
+    <div class="arch-layer arch-2"><span class="arch-name">AI Model Layer</span><span class="arch-detail">Qwen 2.5-3B (Ollama) + rule-based fallback</span></div>
+    <div class="arch-arrow">&#9660;</div>
+    <div class="arch-layer arch-3"><span class="arch-name">Knowledge Graph</span><span class="arch-detail">Accounts, merchants, loans, investments, insurance, tax</span></div>
+    <div class="arch-arrow">&#9660;</div>
+    <div class="arch-layer arch-4"><span class="arch-name">Transaction Classifier</span><span class="arch-detail">100+ merchants, 6 fraud indicators, SAFE/FLAG/ALERT/BLOCK</span></div>
+    <div class="arch-arrow">&#9660;</div>
+    <div class="arch-layer arch-5"><span class="arch-name">Infrastructure</span><span class="arch-detail">FastAPI (async) + WebSocket + Investec API (OAuth2)</span></div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 12: DEMO ============ -->
+<div class="slide bg-black" data-notes="Switch to browser now. Open localhost:8000. Follow the demo script.">
+  <div class="label anim-1" style="font-size:18px;letter-spacing:5px;color:var(--teal-bright)">Live</div>
+  <h1 class="anim-2" style="font-size:140px;font-weight:900;letter-spacing:-5px;color:var(--white)">DEMO</h1>
+  <p class="anim-3 mt-32" style="font-size:20px;color:rgba(255,255,255,0.3)">localhost:8000</p>
+</div>
+
+<!-- ============ SLIDE 13: DEMO - VOICE ============ -->
+<div class="slide bg-white left-align" data-notes="Demo voice commands. Start with balance, then alerts, spending, memory, then payment.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Demo: Voice Intelligence</div>
+  <h3 class="anim-2 mb-24">"Talk to it like a banker"</h3>
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:650px" class="anim-3">
+    <div class="demo-cmd"><span class="cmd-icon">&#128176;</span><span class="cmd-text">"What's my balance?"</span></div>
+    <div class="demo-cmd"><span class="cmd-icon">&#128680;</span><span class="cmd-text">"Any fraud alerts?"</span></div>
+    <div class="demo-cmd"><span class="cmd-icon">&#128200;</span><span class="cmd-text">"Where am I spending the most?"</span></div>
+    <div class="demo-cmd"><span class="cmd-icon">&#129504;</span><span class="cmd-text">"Remember I'm saving for a house"</span></div>
+    <div class="demo-cmd"><span class="cmd-icon">&#128179;</span><span class="cmd-text">"Pay Mom R500"</span></div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 14: DEMO - COMMAND CENTER ============ -->
+<div class="slide bg-white left-align" data-notes="Show Command Center tab. Walk through health score, loan eligibility, smart transfer. These update in real-time.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Demo: Command Center</div>
+  <h3 class="anim-2 mb-24">Financial Cockpit</h3>
+  <div class="three-col anim-3" style="grid-template-columns:1fr 1fr">
+    <div class="card card-accent">
+      <div class="card-icon">&#128153;</div>
+      <div class="card-title">Health Score</div>
+      <div class="card-desc">0-100 scale, A-F grade<br>DTI, buffer, budgets, insurance, investments</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-icon">&#127974;</div>
+      <div class="card-title">Loan Eligibility</div>
+      <div class="card-desc">DTI analysis + verdict<br>Max affordable amount + factors</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-icon">&#128161;</div>
+      <div class="card-title">AI Insights</div>
+      <div class="card-desc">Budget warnings, spending habits<br>Savings rate, concentration alerts</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-icon">&#128260;</div>
+      <div class="card-title">Smart Transfer</div>
+      <div class="card-desc">Inter-account transfers<br>Full audit trail in knowledge graph</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 15: DEMO - SIMULATOR ============ -->
+<div class="slide bg-white left-align" data-notes="Show Graph tab. Start simulator at 2x. Narrate: salary, debit orders, spending, fraud. Stop after 2-3 months. Show graph growth.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Demo: Life Simulator</div>
+  <h3 class="anim-2 mb-24">Watch the graph grow in <span class="highlight">real-time</span></h3>
+  <div class="flow anim-3">
+    <div class="flow-node">Salary</div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node">Debit Orders</div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node">Daily Spending</div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node red">Life Events</div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node purple">Insights</div>
+  </div>
+  <ul class="bullets anim-4 mt-32">
+    <li>Months of financial life compressed into <strong>seconds</strong></li>
+    <li>Fraud attempts, bonuses, emergencies — all <strong>simulated</strong></li>
+    <li>Knowledge graph grows <strong>organically</strong> with every transaction</li>
+    <li>Health score <strong>recalculates</strong> each month</li>
+  </ul>
+</div>
+
+<!-- ============ SLIDE 16: PARADIGM SHIFT ============ -->
+<div class="slide bg-navy left-align" data-notes="The recap. Left = old way, muted. Right = SentiVest, bold and bright.">
+  <div class="label anim-1">The shift</div>
+  <h2 class="anim-2 mb-16">A different <span class="highlight">paradigm</span></h2>
+  <div class="shift-table anim-3 full-width" style="max-width:820px">
+    <div class="shift-row"><div class="shift-old">Shows balance</div><div class="shift-arrow">&#8594;</div><div class="shift-new">Predicts when you'll run out</div></div>
+    <div class="shift-row"><div class="shift-old">Lists transactions</div><div class="shift-arrow">&#8594;</div><div class="shift-new">Classifies and scores every one</div></div>
+    <div class="shift-row"><div class="shift-old">Static dashboard</div><div class="shift-arrow">&#8594;</div><div class="shift-new">Living knowledge graph</div></div>
+    <div class="shift-row"><div class="shift-old">No memory</div><div class="shift-arrow">&#8594;</div><div class="shift-new">Remembers your goals and habits</div></div>
+    <div class="shift-row"><div class="shift-old">You drive</div><div class="shift-arrow">&#8594;</div><div class="shift-new">The agent drives</div></div>
+    <div class="shift-row"><div class="shift-old">Reactive</div><div class="shift-arrow">&#8594;</div><div class="shift-new accent" style="color:var(--teal-bright)">Proactive</div></div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 17: BY THE NUMBERS ============ -->
+<div class="slide bg-white" data-notes="Quick impact slide. Let the numbers speak. Don't read each one — let them absorb visually.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Impact</div>
+  <h3 class="anim-2 mb-16">By the numbers</h3>
+  <div class="stats-grid anim-3">
+    <div class="stat-card"><div class="stat-num">28+</div><div class="stat-label">API Endpoints</div></div>
+    <div class="stat-card"><div class="stat-num">35+</div><div class="stat-label">Voice Commands</div></div>
+    <div class="stat-card"><div class="stat-num">100+</div><div class="stat-label">Known Merchants</div></div>
+    <div class="stat-card"><div class="stat-num">25+</div><div class="stat-label">AI Intent Types</div></div>
+    <div class="stat-card"><div class="stat-num">12</div><div class="stat-label">UI Pages</div></div>
+    <div class="stat-card"><div class="stat-num">6</div><div class="stat-label">Fraud Indicators</div></div>
+    <div class="stat-card"><div class="stat-num">71+</div><div class="stat-label">Tests</div></div>
+    <div class="stat-card"><div class="stat-num">200+</div><div class="stat-label">Total Features</div></div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 18: TECH STACK ============ -->
+<div class="slide bg-white left-align" data-notes="Quick tech overview. Don't over-explain — just show the stack.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Under the hood</div>
+  <h3 class="anim-2 mb-24">Tech Stack</h3>
+  <div class="tech-grid anim-3">
+    <div class="tech-item"><span class="tech-label">Backend</span><span class="tech-value">FastAPI (Python, async)</span></div>
+    <div class="tech-item"><span class="tech-label">AI Model</span><span class="tech-value">Qwen 2.5-3B via Ollama</span></div>
+    <div class="tech-item"><span class="tech-label">Graph</span><span class="tech-value">Custom in-memory engine</span></div>
+    <div class="tech-item"><span class="tech-label">Real-time</span><span class="tech-value">WebSocket</span></div>
+    <div class="tech-item"><span class="tech-label">Banking</span><span class="tech-value">Investec Open API (OAuth2)</span></div>
+    <div class="tech-item"><span class="tech-label">Voice</span><span class="tech-value">Web Speech API + Google STT</span></div>
+    <div class="tech-item"><span class="tech-label">Visualization</span><span class="tech-value">D3.js</span></div>
+    <div class="tech-item"><span class="tech-label">Frontend</span><span class="tech-value">Single-page HTML/JS/CSS</span></div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 19: CLOSING ============ -->
+<div class="slide bg-navy" data-notes="Slow down. Pause between each line. End strong.">
+  <div class="anim-1"><p style="font-size:32px;color:rgba(255,255,255,0.45);margin-bottom:20px">Banks give us data.</p></div>
+  <div class="anim-2"><p style="font-size:42px;color:var(--white);font-weight:800;margin-bottom:40px">SentiVest gives us <span class="highlight">understanding</span>.</p></div>
+  <div class="anim-3" style="max-width:650px;text-align:center">
+    <p style="font-size:22px;color:rgba(255,255,255,0.7);line-height:1.7">A personal knowledge graph that grows with you.<br>An AI agent that protects, advises, and acts.</p>
+  </div>
+  <div class="anim-4 mt-48" style="padding:24px 48px;border:2px solid var(--teal-bright);border-radius:14px;background:rgba(0,168,150,0.1)">
+    <p style="font-size:28px;font-weight:800;color:var(--teal-bright)">Not a dashboard — a brain.</p>
+  </div>
+</div>
+
+<!-- ============ SLIDE 20: THANK YOU ============ -->
+<div class="slide bg-white" data-notes="Thank them. Open for questions.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1" style="letter-spacing:5px">Thank You</div>
+  <h1 class="anim-2 mt-16" style="font-size:64px"><span class="highlight">Questions?</span></h1>
+  <div class="anim-3 mt-48" style="text-align:center">
+    <p class="small" style="color:var(--text-mid)">SentiVest — AI Private Banking Agent</p>
+    <p class="small" style="color:var(--text-light);margin-top:8px">Built with FastAPI + Knowledge Graph + Qwen 2.5-3B</p>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<script>
+// ==================== SLIDE ENGINE ====================
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+const counter = document.getElementById('slideCounter');
+const progress = document.getElementById('progressBar');
+const notes = document.getElementById('presenterNotes');
+let notesVisible = false;
+
+function goTo(index) {
+  if (index < 0 || index >= total || index === current) return;
+  // Remove all states
+  slides.forEach(s => { s.classList.remove('active', 'prev'); s.style.transform = ''; });
+  // Set previous slide
+  slides[current].classList.add('prev');
+  // Set new slide
+  current = index;
+  slides[current].classList.add('active');
+  // Update UI
+  counter.textContent = `${current + 1} / ${total}`;
+  progress.style.width = `${((current + 1) / total) * 100}%`;
+  const noteText = slides[current].getAttribute('data-notes') || '';
+  notes.innerHTML = `<strong>Slide ${current + 1}:</strong> ${noteText}`;
+}
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  switch(e.key) {
+    case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown':
+      e.preventDefault(); goTo(current + 1); break;
+    case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+      e.preventDefault(); goTo(current - 1); break;
+    case 'Home': e.preventDefault(); goTo(0); break;
+    case 'End': e.preventDefault(); goTo(total - 1); break;
+    case 'f': case 'F':
+      if (!e.ctrlKey && !e.metaKey) { e.preventDefault(); toggleFullscreen(); } break;
+    case 'n': case 'N':
+      if (!e.ctrlKey && !e.metaKey) { e.preventDefault(); notesVisible = !notesVisible; notes.classList.toggle('visible', notesVisible); } break;
+    case 'Escape':
+      if (document.fullscreenElement) document.exitFullscreen(); break;
+  }
+});
+
+// Touch/swipe
+let touchX = 0, touchY = 0;
+document.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; touchY = e.changedTouches[0].screenY; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].screenX - touchX;
+  const dy = e.changedTouches[0].screenY - touchY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1); else goTo(current - 1);
+  }
+});
+
+// Click — right 60% advances, left 40% goes back
+document.addEventListener('click', e => {
+  if (e.target.closest('.fs-btn, .presenter-notes')) return;
+  const x = e.clientX / window.innerWidth;
+  if (x > 0.6) goTo(current + 1);
+  else if (x < 0.4) goTo(current - 1);
+});
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen();
+}
+
+// Init
+progress.style.width = `${(1 / total) * 100}%`;
+notes.innerHTML = `<strong>Slide 1:</strong> ${slides[0].getAttribute('data-notes') || ''}`;
+</script>
+</body>
+</html>
