@@ -254,7 +254,14 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
   <div class="label anim-1">AI Banking Agent</div>
   <h1 class="anim-2">Senti<span class="highlight">Vest</span></h1>
   <p class="subtitle anim-3">AI Private Banking Agent with a<br>Personal Financial Knowledge Graph</p>
-  <p class="small mt-64 anim-4">Press <strong style="color:var(--teal)">Space</strong> or <strong style="color:var(--teal)">Arrow Keys</strong> to navigate &middot; <strong style="color:var(--teal)">F</strong> fullscreen &middot; <strong style="color:var(--teal)">N</strong> notes</p>
+  <div class="anim-4 mt-48" style="display:flex;align-items:center;gap:24px">
+    <canvas id="qr-follow" width="120" height="120" style="border:2px solid var(--border);border-radius:10px;padding:6px;background:#fff"></canvas>
+    <div style="text-align:left">
+      <p style="font-size:18px;font-weight:700;color:var(--text)">Follow along on your phone</p>
+      <p style="font-size:13px;color:var(--teal);font-family:'JetBrains Mono',monospace;margin-top:4px">nevvyboi.github.io/SentiVest/presentation.html</p>
+    </div>
+  </div>
+  <p class="small mt-24 anim-5">Press <strong style="color:var(--teal)">Space</strong> or <strong style="color:var(--teal)">Arrow Keys</strong> to navigate &middot; <strong style="color:var(--teal)">F</strong> fullscreen &middot; <strong style="color:var(--teal)">N</strong> notes</p>
 </div>
 
 <!-- ============ SLIDE 2: THE QUESTION ============ -->
@@ -593,17 +600,10 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
   <div class="bg-dots"></div>
   <div class="label anim-1" style="letter-spacing:5px">Thank You</div>
   <h1 class="anim-2 mt-16" style="font-size:64px"><span class="highlight">Questions?</span></h1>
-  <div class="anim-3 mt-48" style="display:flex;gap:80px;align-items:flex-start;justify-content:center">
-    <div style="text-align:center">
-      <canvas id="qr-repo" width="180" height="180" style="border:2px solid var(--border);border-radius:12px;padding:8px;background:#fff"></canvas>
-      <p style="font-size:16px;font-weight:700;color:var(--text);margin-top:12px">Source Code</p>
-      <a href="https://github.com/Nevvyboi/SentiVest" target="_blank" style="font-size:14px;color:var(--teal);text-decoration:none;font-family:'JetBrains Mono',monospace">github.com/Nevvyboi/SentiVest</a>
-    </div>
-    <div style="text-align:center">
-      <canvas id="qr-slides" width="180" height="180" style="border:2px solid var(--border);border-radius:12px;padding:8px;background:#fff"></canvas>
-      <p style="font-size:16px;font-weight:700;color:var(--text);margin-top:12px">Follow Along</p>
-      <a href="https://nevvyboi.github.io/SentiVest/presentation.html" target="_blank" style="font-size:14px;color:var(--teal);text-decoration:none;font-family:'JetBrains Mono',monospace">nevvyboi.github.io/SentiVest/presentation.html</a>
-    </div>
+  <div class="anim-3 mt-48" style="text-align:center">
+    <canvas id="qr-repo" width="200" height="200" style="border:2px solid var(--border);border-radius:14px;padding:10px;background:#fff"></canvas>
+    <p style="font-size:18px;font-weight:700;color:var(--text);margin-top:16px">View the Source Code</p>
+    <a href="https://github.com/Nevvyboi/SentiVest" target="_blank" style="font-size:15px;color:var(--teal);text-decoration:none;font-family:'JetBrains Mono',monospace">github.com/Nevvyboi/SentiVest</a>
   </div>
   <p class="anim-4 small mt-32" style="color:var(--text-light)">SentiVest — AI Private Banking Agent &middot; Built with FastAPI + Knowledge Graph + Qwen 2.5-3B</p>
 </div>
@@ -710,8 +710,8 @@ notes.innerHTML = `<strong>Slide 1:</strong> ${slides[0].getAttribute('data-note
         }
       }
     }
+    renderQR('qr-follow', 'https://nevvyboi.github.io/SentiVest/presentation.html');
     renderQR('qr-repo', 'https://github.com/Nevvyboi/SentiVest');
-    renderQR('qr-slides', 'https://nevvyboi.github.io/SentiVest/presentation.html');
   };
   document.head.appendChild(script);
 })();
