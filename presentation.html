@@ -589,14 +589,23 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE 20: THANK YOU ============ -->
-<div class="slide bg-white" data-notes="Thank them. Open for questions.">
+<div class="slide bg-white" data-notes="Thank them. Open for questions. Point to the QR codes — people can scan to view the repo or follow the slides on their phone.">
   <div class="bg-dots"></div>
   <div class="label anim-1" style="letter-spacing:5px">Thank You</div>
   <h1 class="anim-2 mt-16" style="font-size:64px"><span class="highlight">Questions?</span></h1>
-  <div class="anim-3 mt-48" style="text-align:center">
-    <p class="small" style="color:var(--text-mid)">SentiVest — AI Private Banking Agent</p>
-    <p class="small" style="color:var(--text-light);margin-top:8px">Built with FastAPI + Knowledge Graph + Qwen 2.5-3B</p>
+  <div class="anim-3 mt-48" style="display:flex;gap:80px;align-items:flex-start;justify-content:center">
+    <div style="text-align:center">
+      <canvas id="qr-repo" width="180" height="180" style="border:2px solid var(--border);border-radius:12px;padding:8px;background:#fff"></canvas>
+      <p style="font-size:16px;font-weight:700;color:var(--text);margin-top:12px">Source Code</p>
+      <a href="https://github.com/Nevvyboi/SentiVest" target="_blank" style="font-size:14px;color:var(--teal);text-decoration:none;font-family:'JetBrains Mono',monospace">github.com/Nevvyboi/SentiVest</a>
+    </div>
+    <div style="text-align:center">
+      <canvas id="qr-slides" width="180" height="180" style="border:2px solid var(--border);border-radius:12px;padding:8px;background:#fff"></canvas>
+      <p style="font-size:16px;font-weight:700;color:var(--text);margin-top:12px">Follow Along</p>
+      <a href="https://nevvyboi.github.io/SentiVest/presentation.html" target="_blank" style="font-size:14px;color:var(--teal);text-decoration:none;font-family:'JetBrains Mono',monospace">nevvyboi.github.io/SentiVest/presentation.html</a>
+    </div>
   </div>
+  <p class="anim-4 small mt-32" style="color:var(--text-light)">SentiVest — AI Private Banking Agent &middot; Built with FastAPI + Knowledge Graph + Qwen 2.5-3B</p>
 </div>
 
 </div><!-- /deck -->
@@ -672,6 +681,40 @@ function toggleFullscreen() {
 // Init
 progress.style.width = `${(1 / total) * 100}%`;
 notes.innerHTML = `<strong>Slide 1:</strong> ${slides[0].getAttribute('data-notes') || ''}`;
+
+// ==================== QR CODE GENERATOR ====================
+// Minimal QR code renderer (numeric mode, version auto, error correction L)
+(function(){
+  // Use a lightweight approach: draw QR via external lib loaded from CDN
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';
+  script.onload = function() {
+    function renderQR(canvasId, text) {
+      const qr = qrcode(0, 'L');
+      qr.addData(text);
+      qr.make();
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+      const modules = qr.getModuleCount();
+      const cellSize = size / modules;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#0F172A';
+      for (let r = 0; r < modules; r++) {
+        for (let c = 0; c < modules; c++) {
+          if (qr.isDark(r, c)) {
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize + 0.5, cellSize + 0.5);
+          }
+        }
+      }
+    }
+    renderQR('qr-repo', 'https://github.com/Nevvyboi/SentiVest');
+    renderQR('qr-slides', 'https://nevvyboi.github.io/SentiVest/presentation.html');
+  };
+  document.head.appendChild(script);
+})();
 </script>
 </body>
 </html>
