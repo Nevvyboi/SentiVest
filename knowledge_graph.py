@@ -1487,10 +1487,25 @@ class FinancialKnowledgeGraph:
 
     # ==================== GETTERS ====================
 
+    def get_memory_size(self) -> dict:
+        """Estimate in-memory size of the knowledge graph."""
+        import sys
+        nodes_size = sum(sys.getsizeof(n) + sys.getsizeof(n.attrs) for n in self.nodes.values())
+        edges_size = sum(sys.getsizeof(e) + sys.getsizeof(e.attrs) for e in self.edges)
+        txn_size = sum(sys.getsizeof(t) for t in self.transactions)
+        total = nodes_size + edges_size + txn_size
+        return {
+            "nodes_bytes": nodes_size, "edges_bytes": edges_size,
+            "transactions_bytes": txn_size, "total_bytes": total,
+            "total_kb": round(total / 1024, 1),
+            "total_mb": round(total / (1024 * 1024), 3),
+        }
+
     def get_stats(self) -> dict:
         by_type = defaultdict(int)
         for n in self.nodes.values():
             by_type[n.type] += 1
+        mem = self.get_memory_size()
         return {
             "total_nodes": len(self.nodes), "total_edges": len(self.edges),
             "by_type": dict(by_type),
@@ -1501,7 +1516,8 @@ class FinancialKnowledgeGraph:
             "balance": self.balance, "total_spent": round(self.total_spent, 2),
             "demo_month": self.demo_month, "demo_date": self.get_demo_date_str(),
             "step_counts": dict(self.step_counts),
-            "months_of_data": len(self.monthly_history)
+            "months_of_data": len(self.monthly_history),
+            "memory": mem,
         }
 
     def get_patterns(self) -> list[dict]:
