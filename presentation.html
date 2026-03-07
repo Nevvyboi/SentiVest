@@ -306,7 +306,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 <body>
 
 <div class="progress-bar" id="progressBar"></div>
-<div class="slide-counter" id="slideCounter">1 / 20</div>
+<div class="slide-counter" id="slideCounter">1 / 22</div>
 <button class="fs-btn" onclick="toggleFullscreen()">F Fullscreen</button>
 <div class="presenter-notes" id="presenterNotes"></div>
 
@@ -630,24 +630,91 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
   </div>
 </div>
 
-<!-- ============ SLIDE 18: TECH STACK ============ -->
+<!-- ============ SLIDE 18: WHY THIS MODEL ============ -->
+<div class="slide bg-white left-align" data-notes="Explain the model choice. Qwen 2.5-3B is small enough to run locally on a laptop, fast inference, no API costs, data stays private. Show token budgets per mode. Mention rule-based fallback if Ollama is offline.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">AI Model Choice</div>
+  <h3 class="anim-2 mb-24">Why <span class="highlight">Qwen 2.5-3B</span>?</h3>
+  <div class="two-col anim-3">
+    <div>
+      <ul class="bullets">
+        <li><strong>3 billion parameters</strong> — small enough to run on a laptop GPU</li>
+        <li><strong>Local via Ollama</strong> — no cloud API costs, no rate limits</li>
+        <li><strong>Data stays private</strong> — financial data never leaves the device</li>
+        <li><strong>Fast inference</strong> — ~2-5s response time locally</li>
+        <li><strong>Rule-based fallback</strong> — works even without the model running</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">Token Budgets by Mode</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="tech-item"><span class="tech-label" style="min-width:100px">Voice</span><span class="tech-value">80 tokens &middot; temp 0.6</span></div>
+        <div class="tech-item"><span class="tech-label" style="min-width:100px">Intent</span><span class="tech-value">150 tokens &middot; temp 0.1</span></div>
+        <div class="tech-item"><span class="tech-label" style="min-width:100px">Reasoning</span><span class="tech-value">300 tokens &middot; temp 0.3</span></div>
+        <div class="tech-item"><span class="tech-label" style="min-width:100px">Scenario</span><span class="tech-value">350 tokens &middot; temp 0.4</span></div>
+        <div class="tech-item"><span class="tech-label" style="min-width:100px">Chat</span><span class="tech-value">400 tokens &middot; temp 0.7</span></div>
+      </div>
+      <p style="font-size:13px;color:var(--text-light);margin-top:12px">Lower temp = precise/structured &middot; Higher temp = conversational</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 19: KNOWLEDGE GRAPH DETAIL ============ -->
+<div class="slide bg-white left-align" data-notes="Show what the graph actually stores. 22+ node types, relationships between them. Entirely in-memory — no database, instant traversal. Grows organically with every transaction.">
+  <div class="bg-dots"></div>
+  <div class="label anim-1">Inside the Brain</div>
+  <h3 class="anim-2 mb-24">Knowledge Graph <span class="highlight">in Detail</span></h3>
+  <div class="two-col anim-3">
+    <div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">22+ Node Types</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="graph-node gn-merchant" style="font-size:12px;padding:5px 10px">Merchant</span>
+        <span class="graph-node gn-category" style="font-size:12px;padding:5px 10px">Category</span>
+        <span class="graph-node gn-budget" style="font-size:12px;padding:5px 10px">Budget</span>
+        <span class="graph-node gn-pattern" style="font-size:12px;padding:5px 10px">Pattern</span>
+        <span class="graph-node gn-predict" style="font-size:12px;padding:5px 10px">Prediction</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:var(--red-bg);color:var(--red);border:2px solid var(--red)">Loan</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:var(--blue-bg);color:var(--blue);border:2px solid var(--blue)">Investment</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:var(--orange-bg);color:var(--orange);border:2px solid var(--orange)">Insurance</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:#F3F4F6;color:#6B7280;border:2px solid #6B7280">Tax</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:var(--green-bg);color:var(--green);border:2px solid var(--green)">Income</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:var(--purple-bg);color:var(--purple);border:2px solid var(--purple)">Beneficiary</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:#EFF6FF;color:#1E40AF;border:2px solid #1E40AF">Account</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:#ECFDF5;color:#14B8A6;border:2px solid #14B8A6">Transfer</span>
+        <span class="graph-node" style="font-size:12px;padding:5px 10px;background:#FEF2F2;color:#B91C1C;border:2px solid #B91C1C">Alert</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">How It Works</div>
+      <ul class="bullets" style="margin-top:0">
+        <li><strong>100% in-memory</strong> — no database, zero latency traversal</li>
+        <li><strong>Nodes + Edges</strong> — entities connected by typed, weighted relationships</li>
+        <li><strong>Grows organically</strong> — every transaction adds merchants, categories, patterns</li>
+        <li><strong>Real-time context</strong> — builds prompt context for AI from graph traversal</li>
+        <li><strong>Self-discovering</strong> — auto-detects patterns, subscriptions, anomalies</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 20: TECH STACK ============ -->
 <div class="slide bg-white left-align" data-notes="Quick tech overview. Don't over-explain — just show the stack.">
   <div class="bg-dots"></div>
   <div class="label anim-1">Under the hood</div>
   <h3 class="anim-2 mb-24">Tech Stack</h3>
   <div class="tech-grid anim-3">
     <div class="tech-item"><span class="tech-label">Backend</span><span class="tech-value">FastAPI (Python, async)</span></div>
-    <div class="tech-item"><span class="tech-label">AI Model</span><span class="tech-value">Qwen 2.5-3B via Ollama</span></div>
-    <div class="tech-item"><span class="tech-label">Graph</span><span class="tech-value">Custom in-memory engine</span></div>
-    <div class="tech-item"><span class="tech-label">Real-time</span><span class="tech-value">WebSocket</span></div>
+    <div class="tech-item"><span class="tech-label">AI Model</span><span class="tech-value">Qwen 2.5-3B via Ollama (local)</span></div>
+    <div class="tech-item"><span class="tech-label">Graph</span><span class="tech-value">Custom in-memory engine (Nodes + Edges)</span></div>
+    <div class="tech-item"><span class="tech-label">Real-time</span><span class="tech-value">WebSocket (bidirectional)</span></div>
     <div class="tech-item"><span class="tech-label">Banking</span><span class="tech-value">Investec Open API (OAuth2)</span></div>
     <div class="tech-item"><span class="tech-label">Voice</span><span class="tech-value">Web Speech API + Google STT</span></div>
-    <div class="tech-item"><span class="tech-label">Visualization</span><span class="tech-value">D3.js</span></div>
-    <div class="tech-item"><span class="tech-label">Frontend</span><span class="tech-value">Single-page HTML/JS/CSS</span></div>
+    <div class="tech-item"><span class="tech-label">Visualization</span><span class="tech-value">D3.js force-directed graph</span></div>
+    <div class="tech-item"><span class="tech-label">Frontend</span><span class="tech-value">Single-page HTML/JS/CSS (zero frameworks)</span></div>
   </div>
 </div>
 
-<!-- ============ SLIDE 19: CLOSING ============ -->
+<!-- ============ SLIDE 21: CLOSING ============ -->
 <div class="slide bg-navy" data-notes="Slow down. Pause between each line. End strong.">
   <div class="anim-1"><p style="font-size:32px;color:rgba(255,255,255,0.45);margin-bottom:20px">Banks give us data.</p></div>
   <div class="anim-2"><p style="font-size:42px;color:var(--white);font-weight:800;margin-bottom:40px">SentiVest gives us <span class="highlight">understanding</span>.</p></div>
@@ -659,7 +726,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
   </div>
 </div>
 
-<!-- ============ SLIDE 20: THANK YOU ============ -->
+<!-- ============ SLIDE 22: THANK YOU ============ -->
 <div class="slide bg-white" data-notes="Thank them. Open for questions. Point to the QR codes — people can scan to view the repo or follow the slides on their phone.">
   <div class="bg-dots"></div>
   <div class="label anim-1" style="letter-spacing:5px">Thank You</div>
