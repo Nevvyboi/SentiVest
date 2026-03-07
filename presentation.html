@@ -207,67 +207,82 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 }
 /* Responsive — phone */
 @media(max-width:600px){
-  h1{font-size:32px;letter-spacing:-1px}
-  h2{font-size:28px;letter-spacing:-1px}
-  h3{font-size:22px;letter-spacing:0}
-  p{font-size:16px}
-  .subtitle{font-size:18px}
-  .small{font-size:12px}
-  .label{font-size:11px;letter-spacing:2px;margin-bottom:12px}
-  .slide{padding:24px 20px}
-  .two-col{grid-template-columns:1fr;gap:24px}
-  .three-col{grid-template-columns:1fr;gap:14px}
-  .stats-grid{grid-template-columns:1fr 1fr;gap:10px}
-  .stat-num{font-size:32px}
-  .stat-label{font-size:12px}
-  .stat-card{padding:16px}
-  .tech-grid{grid-template-columns:1fr;gap:8px}
-  .tech-item{padding:10px 14px}
-  .tech-label{font-size:11px;min-width:80px}
-  .tech-value{font-size:14px}
-  .bullets li{font-size:16px;gap:10px}
-  .bullets li::before{width:7px;height:7px;margin-top:7px}
-  .comp-table{font-size:12px}
-  .comp-table th{padding:8px 6px;font-size:10px;letter-spacing:0.5px}
-  .comp-table td{padding:8px 6px}
-  .pill-card{padding:12px 16px;gap:10px}
-  .pill-icon{font-size:20px}
-  .pill-label{font-size:15px}
-  .pill-desc{font-size:13px}
-  .card{padding:18px;border-radius:12px}
-  .card-icon{font-size:24px;margin-bottom:6px}
-  .card-title{font-size:16px}
-  .card-desc{font-size:13px}
-  .flow{gap:6px;margin-top:20px}
-  .flow-node{padding:8px 14px;font-size:13px;border-radius:8px}
-  .flow-arrow{font-size:16px}
-  .arch-layer{padding:12px 16px;font-size:13px;margin-bottom:6px}
-  .arch-layer .arch-detail{font-size:11px}
-  .arch-arrow{font-size:14px}
-  .demo-cmd{padding:10px 16px;font-size:14px;gap:10px}
-  .demo-cmd .cmd-icon{font-size:18px}
-  .big-quote{font-size:24px}
-  .big-quote .qm{font-size:40px}
-  .shift-old{font-size:15px}
-  .shift-new{font-size:15px}
-  .shift-arrow{padding:0 12px;font-size:16px}
-  .db-mock{font-size:10px;padding:14px}
-  .kg-box{padding:14px}
-  .graph-node{padding:6px 12px;font-size:11px}
-  .graph-edge{font-size:16px}
-  .phone-mock{width:140px;height:280px}
-  .slide-counter{font-size:11px;bottom:12px;right:16px}
+  .slide{padding:20px 16px;justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  h1{font-size:24px;letter-spacing:-1px}
+  h2{font-size:20px;letter-spacing:-0.5px}
+  h3{font-size:17px;letter-spacing:0}
+  p{font-size:13px}
+  .subtitle{font-size:14px;margin-top:8px}
+  .small{font-size:10px}
+  .label{font-size:9px;letter-spacing:1.5px;margin-bottom:8px}
+  .highlight{word-break:break-word}
+  .mt-16{margin-top:8px}.mt-24{margin-top:12px}.mt-32{margin-top:14px}.mt-48{margin-top:18px}.mt-64{margin-top:24px}
+  .mb-16{margin-bottom:8px}.mb-24{margin-bottom:12px}
+  .two-col{grid-template-columns:1fr;gap:14px}
+  .three-col{grid-template-columns:1fr;gap:10px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:6px}
+  .stat-num{font-size:22px}
+  .stat-label{font-size:9px}
+  .stat-card{padding:10px}
+  .tech-grid{grid-template-columns:1fr;gap:5px}
+  .tech-item{padding:8px 10px}
+  .tech-label{font-size:9px;min-width:65px;letter-spacing:1px}
+  .tech-value{font-size:12px}
+  .bullets{gap:8px;margin-top:12px}
+  .bullets li{font-size:12px;gap:8px;line-height:1.4}
+  .bullets li::before{width:5px;height:5px;margin-top:6px}
+  .comp-table{font-size:9px}
+  .comp-table th{padding:5px 4px;font-size:8px;letter-spacing:0.3px}
+  .comp-table td{padding:5px 4px}
+  .pill-card{padding:8px 12px;gap:8px}
+  .pill-icon{font-size:16px}
+  .pill-label{font-size:12px}
+  .pill-desc{font-size:10px}
+  .card{padding:12px;border-radius:10px}
+  .card-icon{font-size:18px;margin-bottom:4px}
+  .card-title{font-size:13px}
+  .card-desc{font-size:10px;line-height:1.4}
+  .flow{gap:4px;margin-top:12px}
+  .flow-node{padding:5px 8px;font-size:10px;border-radius:6px}
+  .flow-arrow{font-size:12px}
+  .arch-layer{padding:8px 10px;font-size:11px;margin-bottom:4px;border-width:1px}
+  .arch-layer .arch-name{font-size:11px}
+  .arch-layer .arch-detail{font-size:9px}
+  .arch-arrow{font-size:10px;padding:1px 0}
+  .demo-cmd{padding:6px 10px;font-size:11px;gap:8px}
+  .demo-cmd .cmd-icon{font-size:14px}
+  .big-quote{font-size:18px;padding:0 10px}
+  .big-quote .qm{font-size:28px}
+  .shift-table{margin-top:14px}
+  .shift-row{padding:8px 0}
+  .shift-old{font-size:11px}
+  .shift-new{font-size:11px}
+  .shift-arrow{padding:0 6px;font-size:12px}
+  .db-mock{font-size:8px;padding:10px;line-height:1.6}
+  .kg-box{padding:10px}
+  .graph-node{padding:4px 8px;font-size:9px;border-width:1px}
+  .graph-edge{font-size:12px;margin:0 2px}
+  .phone-mock{width:100px;height:200px;border-width:2px;border-radius:18px}
+  .phone-mock-bar{padding:3px 8px;font-size:7px}
+  .phone-mock-content{padding:5px;gap:3px;font-size:7px}
+  .phone-mock-nav{padding:3px;font-size:6px}
+  .slide-counter{font-size:9px;bottom:8px;right:10px}
   .fs-btn{display:none}
-  .presenter-notes{font-size:12px;padding:10px 16px}
+  .presenter-notes{font-size:10px;padding:8px 12px}
+  .progress-bar{height:2px}
+  /* QR codes smaller on mobile */
+  #qr-follow{width:80px!important;height:80px!important}
+  #qr-repo{width:120px!important;height:120px!important}
 }
 /* Phone landscape */
 @media(max-height:500px){
-  .slide{padding:16px 32px}
-  h1{font-size:36px}h2{font-size:28px}h3{font-size:22px}
-  .mt-48{margin-top:16px}.mt-64{margin-top:24px}.mt-32{margin-top:12px}
-  .stats-grid{grid-template-columns:repeat(4,1fr);gap:8px}
-  .stat-num{font-size:28px}
-  .stat-card{padding:10px}
+  .slide{padding:12px 24px;justify-content:flex-start;overflow-y:auto}
+  h1{font-size:28px}h2{font-size:22px}h3{font-size:18px}
+  .mt-48{margin-top:10px}.mt-64{margin-top:16px}.mt-32{margin-top:8px}
+  .stats-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+  .stat-num{font-size:22px}
+  .stat-card{padding:8px}
+  .big-quote{font-size:20px}
 }
 
 /* Presenter notes */
