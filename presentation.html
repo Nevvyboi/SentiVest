@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SentiVest — Presentation</title>
+<title>SentiVest, Presentation</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -328,7 +328,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 <div class="deck" id="deck">
 
 <!-- ============ SLIDE 1: TITLE ============ -->
-<div class="slide bg-white active" data-notes="Welcome everyone. Today I'm presenting SentiVest — an AI-powered private banking agent built on a personal financial knowledge graph.">
+<div class="slide bg-white active" data-notes="Welcome everyone. Today I'm presenting SentiVest, an AI-powered private banking agent built on a personal financial knowledge graph.">
   <div class="bg-dots"></div>
   <div class="label anim-1">AI Banking Agent</div>
   <h1 class="anim-2">Senti<span class="highlight">Vest</span></h1>
@@ -345,35 +345,35 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE 2: WHY I BUILT THIS ============ -->
-<div class="slide bg-light left-align" data-notes="Personal framing. I bank with Investec, I never learn anything from my app. What if it actually understood me? That's why I built this — about 10,000 lines of code.">
+<div class="slide bg-light left-align" data-notes="Personal framing. I bank with Investec, I never learn anything from my app. What if it actually understood me? That's why I built this, about 10,000 lines of code.">
   <div class="bg-dots"></div>
   <div class="label anim-1">The Motivation</div>
   <h2 class="anim-2">Why I built this</h2>
   <ul class="bullets anim-3 mt-32">
     <li>I bank with Investec. I open the app, check my balance, scroll through transactions... and close it. I never actually <strong>learn</strong> anything.</li>
     <li>I kept asking myself: <strong style="color:var(--teal)">what if my banking app actually understood me?</strong></li>
-    <li>Not just numbers — but <strong>connecting the dots</strong>. Knowing my habits. Warning me before I overspend. Remembering my goals.</li>
-    <li>So I built it — backend, frontend, AI, knowledge graph — <strong>~10,000 lines of code</strong>, one developer.</li>
+    <li>Not just numbers. But <strong>connecting the dots</strong>. Knowing my habits. Warning me before I overspend. Remembering my goals.</li>
+    <li>So I built it. Backend, frontend, AI, knowledge graph. <strong>~10,000 lines of code</strong>, one developer.</li>
   </ul>
   <p class="small mt-32 anim-4" style="color:var(--text-light)">Nevin Tom &middot; Data Engineer &middot; linkedin.com/in/nevtom</p>
 </div>
 
 <!-- ============ SLIDE 3: THE QUESTION ============ -->
-<div class="slide bg-black" data-notes="Pause after this. Let the audience think. Then say: Banks give you data — rows of transactions. But nobody gives you understanding.">
+<div class="slide bg-black" data-notes="Pause after this. Let the audience think. Then say: Banks give you data. Rows of transactions. But nobody gives you understanding.">
   <div class="big-quote anim-1">
     <span class="qm">"</span>Do you actually understand<br>where your money goes?<span class="qm">"</span>
   </div>
 </div>
 
 <!-- ============ SLIDE 3: THE PROBLEM ============ -->
-<div class="slide bg-white left-align" data-notes="Walk through each point. These aren't edge cases — this is everyone's reality. Build the pain before the solution.">
+<div class="slide bg-white left-align" data-notes="Walk through each point. These aren't edge cases, this is everyone's reality. Build the pain before the solution.">
   <div class="bg-dots"></div>
   <div class="label anim-1">The Problem</div>
   <h2 class="anim-2">Banking apps are <span class="red">passive</span></h2>
   <ul class="bullets red-bullets anim-3 mt-32">
     <li>They show data, they don't <strong>think</strong></li>
-    <li>Fraud detection is reactive — you find out <strong>after</strong> the damage</li>
-    <li>Spending, loans, investments, insurance, tax — all <strong>siloed</strong></li>
+    <li>Fraud detection is reactive. You find out <strong>after</strong> the damage</li>
+    <li>Spending, loans, investments, insurance, tax: all <strong>siloed</strong></li>
     <li>Most people don't know their debt-to-income ratio or financial health</li>
     <li>You can't talk to your bank at 2am and get a <strong>real answer</strong></li>
   </ul>
@@ -397,9 +397,9 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
     </thead>
     <tbody>
       <tr><td>Input</td><td>You click buttons</td><td>You ask questions</td><td class="col-hl">Watches everything</td></tr>
-      <tr><td>Memory</td><td>None</td><td>None</td><td class="col-hl">Persistent — learns you</td></tr>
+      <tr><td>Memory</td><td>None</td><td>None</td><td class="col-hl">Persistent. Learns you</td></tr>
       <tr><td>Reasoning</td><td>None</td><td>Scripted</td><td class="col-hl">Connects patterns</td></tr>
-      <tr><td>Action</td><td>You decide</td><td>Suggests</td><td class="col-hl">Acts autonomously</td></tr>
+      <tr><td>Behaviours</td><td>You decide</td><td>Suggests</td><td class="col-hl">Autonomous behaviours</td></tr>
       <tr><td>Proactive</td><td style="color:var(--red)">Never</td><td style="color:var(--red)">Never</td><td class="col-hl" style="color:var(--green);font-weight:800">Warns before you ask</td></tr>
       <tr><td>Data model</td><td>SQL rows</td><td>JSON responses</td><td class="col-hl">Knowledge Graph</td></tr>
       <tr><td>Context</td><td>Current screen only</td><td>Last message</td><td class="col-hl">Entire financial history</td></tr>
@@ -408,21 +408,21 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE 6: WHAT THE AGENT DOES ============ -->
-<div class="slide bg-white left-align" data-notes="Walk through each capability. It's a cycle — perceive, classify, warn, remember, act. Not a one-shot response.">
+<div class="slide bg-white left-align" data-notes="Walk through each capability. It's a cycle, perceive, classify, warn, remember, act. Not a one-shot response.">
   <div class="bg-dots"></div>
   <div class="label anim-1">SentiVest Agent</div>
-  <h3 class="anim-2 mb-24">What the agent does</h3>
+  <h3 class="anim-2 mb-24">Agent behaviours</h3>
   <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:750px">
-    <div class="pill-card teal anim-2"><span class="pill-icon">&#128065;</span><div><div class="pill-label">Perceives</div><div class="pill-desc">Every transaction flows in real-time via WebSocket — the agent sees it before you do</div></div></div>
-    <div class="pill-card blue anim-3"><span class="pill-icon">&#9878;&#65039;</span><div><div class="pill-label">Classifies</div><div class="pill-desc">Scores each transaction across 6 fraud indicators — verdict: SAFE, FLAG, ALERT, or BLOCK</div></div></div>
-    <div class="pill-card orange anim-4"><span class="pill-icon">&#9888;&#65039;</span><div><div class="pill-label">Warns</div><div class="pill-desc">Proactively alerts on budget breaches, suspicious patterns, low balances — without being asked</div></div></div>
-    <div class="pill-card purple anim-5"><span class="pill-icon">&#129504;</span><div><div class="pill-label">Remembers</div><div class="pill-desc">Persistent memory across sessions — your name, goals, preferences, financial concerns saved to disk</div></div></div>
-    <div class="pill-card green anim-6"><span class="pill-icon">&#9889;</span><div><div class="pill-label">Acts</div><div class="pill-desc">Freezes suspicious cards, executes payments, transfers funds, generates tasks — autonomously</div></div></div>
+    <div class="pill-card teal anim-2"><span class="pill-icon">&#128065;</span><div><div class="pill-label">Perceives</div><div class="pill-desc">Every transaction flows in real-time via WebSocket. The agent sees it before you do</div></div></div>
+    <div class="pill-card blue anim-3"><span class="pill-icon">&#9878;&#65039;</span><div><div class="pill-label">Classifies</div><div class="pill-desc">Scores each transaction across 6 fraud indicators. Verdict: SAFE, FLAG, ALERT, or BLOCK</div></div></div>
+    <div class="pill-card orange anim-4"><span class="pill-icon">&#9888;&#65039;</span><div><div class="pill-label">Warns</div><div class="pill-desc">Proactively alerts on budget breaches, suspicious patterns, low balances. Without being asked</div></div></div>
+    <div class="pill-card purple anim-5"><span class="pill-icon">&#129504;</span><div><div class="pill-label">Remembers</div><div class="pill-desc">Persistent memory across sessions. Your name, goals, preferences, financial concerns saved to disk</div></div></div>
+    <div class="pill-card green anim-6"><span class="pill-icon">&#9889;</span><div><div class="pill-label">Autonomous Behaviours</div><div class="pill-desc">Freezes suspicious cards, executes payments, transfers funds, generates tasks. Autonomously</div></div></div>
   </div>
 </div>
 
 <!-- ============ SLIDE 7: WHY KNOWLEDGE GRAPH ============ -->
-<div class="slide bg-white" data-notes="Key slide. A database stores records in rows. A knowledge graph stores relationships. Finances are inherently connected — a graph models that naturally.">
+<div class="slide bg-white" data-notes="Key slide. A database stores records in rows. A knowledge graph stores relationships. Finances are inherently connected, a graph models that naturally.">
   <div class="bg-dots"></div>
   <div class="label anim-1">The Brain</div>
   <h2 class="anim-2">Why a <span class="highlight">Knowledge Graph</span>?</h2>
@@ -463,7 +463,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE 8: GRAPH KEY INSIGHT ============ -->
-<div class="slide bg-navy" data-notes="The punchline — databases tell you what happened, graphs tell you why it matters. The graph IS the agent's brain.">
+<div class="slide bg-navy" data-notes="The punchline, databases tell you what happened, graphs tell you why it matters. The graph IS the agent's brain.">
   <div class="anim-1">
     <p style="font-size:30px;color:rgba(255,255,255,0.5);margin-bottom:28px">A database tells you <strong style="color:#fff">what happened</strong></p>
   </div>
@@ -476,7 +476,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE 9: WHY UNIQUE ============ -->
-<div class="slide bg-white left-align" data-notes="Three approaches side by side. Banks = records. Fintechs = visuals. SentiVest = reasoning. Different paradigm. Emphasize the bottom row — that's the killer difference.">
+<div class="slide bg-white left-align" data-notes="Three approaches side by side. Banks = records. Fintechs = visuals. SentiVest = reasoning. Different paradigm. Emphasize the bottom row, that's the killer difference.">
   <div class="bg-dots"></div>
   <div class="label anim-1">Why this is different</div>
   <h3 class="anim-2 mb-24">Three approaches to banking</h3>
@@ -485,7 +485,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
       <div class="card-icon">&#127974;</div>
       <div class="card-title">Traditional Banks</div>
       <div class="card-desc">
-        <strong style="color:var(--text)">SQL databases</strong> — flat rows of transactions<br>
+        <strong style="color:var(--text)">SQL databases</strong>, flat rows of transactions<br>
         Good for record-keeping<br>
         No connections between data points<br>
         You query it, it returns rows<br>
@@ -496,7 +496,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
       <div class="card-icon">&#128202;</div>
       <div class="card-title">Fintechs</div>
       <div class="card-desc">
-        <strong style="color:var(--text)">Dashboards + charts</strong> — pie graphs, bar charts<br>
+        <strong style="color:var(--text)">Dashboards + charts</strong>, pie graphs, bar charts<br>
         Good for visualizing categories<br>
         Still no understanding of <em>why</em><br>
         Same data, just prettier<br>
@@ -507,30 +507,30 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
       <div class="card-icon">&#129504;</div>
       <div class="card-title" style="color:var(--teal)">SentiVest</div>
       <div class="card-desc">
-        <strong style="color:var(--text)">Knowledge Graph</strong> — connected entities<br>
+        <strong style="color:var(--text)">Knowledge Graph</strong>, connected entities<br>
         Good for <strong style="color:var(--text)">reasoning and prediction</strong><br>
         Understands relationships between everything<br>
         Discovers patterns you never asked about<br>
-        <span style="color:var(--teal);font-weight:600">Alive — grows with you</span>
+        <span style="color:var(--teal);font-weight:600">Alive. Grows with you</span>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ============ SLIDE 10: INTRODUCING SENTIVEST ============ -->
-<div class="slide bg-white left-align" data-notes="Quick feature rundown before the demo. Don't linger — the demo will show all of this.">
+<div class="slide bg-white left-align" data-notes="Quick feature rundown before the demo. Don't linger, the demo will show all of this.">
   <div class="bg-dots"></div>
   <div class="label anim-1">The Solution</div>
   <h2 class="anim-2">Introducing <span class="highlight">SentiVest</span></h2>
   <div class="two-col mt-32">
     <div>
       <ul class="bullets anim-3">
-        <li><strong>Voice-first</strong> — talk like you're speaking to a real banker</li>
+        <li><strong>Voice-first</strong>: talk like you're speaking to a real banker</li>
         <li><strong>37 voice commands</strong> with multi-turn conversations</li>
-        <li><strong>Real-time fraud detection</strong> — 80 SA merchants</li>
+        <li><strong>Real-time fraud detection</strong>: 80 SA merchants</li>
         <li><strong>Financial health score</strong>, loan eligibility, proactive insights</li>
-        <li><strong>Life simulator</strong> — months of financial life in seconds</li>
-        <li><strong>Built for South Africa</strong> — Investec API, ZAR</li>
+        <li><strong>Life simulator</strong>: months of financial life in seconds</li>
+        <li><strong>Built for South Africa</strong>: Investec API, ZAR</li>
       </ul>
     </div>
     <div class="anim-4" style="text-align:center">
@@ -561,26 +561,26 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 <div class="slide bg-white left-align" data-notes="Walk through each layer. Voice at top handles user input. AI model parses intent via structured JSON. KG connects everything. Classifier scores fraud risk. Infra handles async I/O and real-time. Each layer has a specific job.">
   <div class="bg-dots"></div>
   <div class="label anim-1">How it works</div>
-  <h3 class="anim-2 mb-24">Architecture — 5 Layers</h3>
+  <h3 class="anim-2 mb-24">Architecture: 5 Layers</h3>
   <div class="two-col anim-3">
     <div style="display:flex;flex-direction:column;width:100%">
-      <div class="arch-layer arch-1"><span class="arch-name">Voice / Chat Interface</span><span class="arch-detail">voice.py — 37 handlers</span></div>
+      <div class="arch-layer arch-1"><span class="arch-name">Voice / Chat Interface</span><span class="arch-detail">voice.py: 37 handlers</span></div>
       <div class="arch-arrow">&#9660;</div>
-      <div class="arch-layer arch-2"><span class="arch-name">AI Model Layer</span><span class="arch-detail">model.py — intent parsing + generation</span></div>
+      <div class="arch-layer arch-2"><span class="arch-name">AI Model Layer</span><span class="arch-detail">model.py: intent parsing + generation</span></div>
       <div class="arch-arrow">&#9660;</div>
-      <div class="arch-layer arch-3"><span class="arch-name">Knowledge Graph</span><span class="arch-detail">knowledge_graph.py — 2000+ lines</span></div>
+      <div class="arch-layer arch-3"><span class="arch-name">Knowledge Graph</span><span class="arch-detail">knowledge_graph.py: 2000+ lines</span></div>
       <div class="arch-arrow">&#9660;</div>
-      <div class="arch-layer arch-4"><span class="arch-name">Transaction Classifier</span><span class="arch-detail">agent.py — weighted fraud scoring</span></div>
+      <div class="arch-layer arch-4"><span class="arch-name">Transaction Classifier</span><span class="arch-detail">agent.py: weighted fraud scoring</span></div>
       <div class="arch-arrow">&#9660;</div>
-      <div class="arch-layer arch-5"><span class="arch-name">Infrastructure</span><span class="arch-detail">main.py — 41 routes, WebSocket</span></div>
+      <div class="arch-layer arch-5"><span class="arch-name">Infrastructure</span><span class="arch-detail">main.py: 41 routes, WebSocket</span></div>
     </div>
     <div>
       <ul class="bullets" style="margin-top:0">
         <li><strong>Voice</strong> parses natural language, manages multi-turn payment flows, stores memory to disk</li>
         <li><strong>AI Model</strong> extracts structured JSON intents with 28 types, falls back to keyword rules if offline</li>
-        <li><strong>Knowledge Graph</strong> is the single source of truth — all balances, merchants, patterns live here</li>
+        <li><strong>Knowledge Graph</strong> is the single source of truth. All balances, merchants, patterns live here</li>
         <li><strong>Classifier</strong> scores every transaction across 6 fraud indicators with weighted confidence</li>
-        <li><strong>FastAPI</strong> runs fully async — handles concurrent WebSocket streams for real-time updates</li>
+        <li><strong>FastAPI</strong> runs fully async. Handles concurrent WebSocket streams for real-time updates</li>
       </ul>
     </div>
   </div>
@@ -608,11 +608,11 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
     </div>
     <div>
       <ul class="bullets" style="margin-top:0">
-        <li><strong>Real data</strong> — every response pulls live numbers from the knowledge graph, not templates</li>
-        <li><strong>Multi-turn flows</strong> — "Pay Mom" triggers a 4-step flow: find beneficiary, disambiguate, confirm amount, execute</li>
-        <li><strong>Persistent memory</strong> — "remember" saves facts to disk, recalled across sessions</li>
-        <li><strong>Text-to-speech</strong> — responses are spoken aloud with natural delivery (Web Speech API)</li>
-        <li><strong>28 intent types</strong> — the AI model parses what you mean, not just keyword matching</li>
+        <li><strong>Real data</strong>: every response pulls live numbers from the knowledge graph, not templates</li>
+        <li><strong>Multi-turn flows</strong>: "Pay Mom" triggers a 4-step flow: find beneficiary, disambiguate, confirm amount, execute</li>
+        <li><strong>Persistent memory</strong>: "remember" saves facts to disk, recalled across sessions</li>
+        <li><strong>Text-to-speech</strong>: responses are spoken aloud with natural delivery (Web Speech API)</li>
+        <li><strong>28 intent types</strong>: the AI model parses what you mean, not just keyword matching</li>
       </ul>
     </div>
   </div>
@@ -665,15 +665,15 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
   </div>
   <ul class="bullets anim-4 mt-32">
     <li>Months of financial life compressed into <strong>seconds</strong> (0.5x to 5x speed)</li>
-    <li>Fraud attempts, bonuses, medical emergencies, tax refunds, salary increases — <strong>randomized life events</strong></li>
-    <li>Knowledge graph grows <strong>organically</strong> — watch nodes and edges appear in real-time on the D3 visualization</li>
-    <li>Health score <strong>recalculates</strong> each month — see the ring gauge animate as finances change</li>
-    <li>Every event streams via <strong>WebSocket</strong> — audit log, toast notifications, graph updates simultaneously</li>
+    <li>Fraud attempts, bonuses, medical emergencies, tax refunds, salary increases: <strong>randomized life events</strong></li>
+    <li>Knowledge graph grows <strong>organically</strong>. Watch nodes and edges appear in real-time on the D3 visualization</li>
+    <li>Health score <strong>recalculates</strong> each month. See the ring gauge animate as finances change</li>
+    <li>Every event streams via <strong>WebSocket</strong>: audit log, toast notifications, graph updates simultaneously</li>
   </ul>
 </div>
 
 <!-- ============ SLIDE: CHALLENGES ============ -->
-<div class="slide bg-white left-align" data-notes="Be honest about what was hard. The frontend was one massive HTML file. Fraud scoring needed tons of weight tuning. Voice payments run on regex — no ML. Simulator had race conditions everywhere.">
+<div class="slide bg-white left-align" data-notes="Be honest about what was hard. The frontend was one massive HTML file. Fraud scoring needed tons of weight tuning. Voice payments run on regex. No ML. Simulator had race conditions everywhere.">
   <div class="bg-dots"></div>
   <div class="label anim-1">Lessons Learned</div>
   <h3 class="anim-2 mb-24">The <span class="red">hard</span> parts</h3>
@@ -681,7 +681,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
     <div class="card">
       <div class="card-icon">&#128187;</div>
       <div class="card-title">Single-file Frontend</div>
-      <div class="card-desc"><strong>3,260 lines</strong>, 114 JS functions, zero frameworks. Managing state across a phone UI, WebSocket streams, D3 graph, and dashboard in vanilla JS. It works — but it wasn't pleasant.</div>
+      <div class="card-desc"><strong>3,260 lines</strong>, 114 JS functions, zero frameworks. Managing state across a phone UI, WebSocket streams, D3 graph, and dashboard in vanilla JS. It works. But it wasn't pleasant.</div>
     </div>
     <div class="card">
       <div class="card-icon">&#128270;</div>
@@ -716,7 +716,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE 17: BY THE NUMBERS ============ -->
-<div class="slide bg-white" data-notes="Quick impact slide. Let the numbers speak. Don't read each one — let them absorb visually.">
+<div class="slide bg-white" data-notes="Quick impact slide. Let the numbers speak. Don't read each one, let them absorb visually.">
   <div class="bg-dots"></div>
   <div class="label anim-1">Impact</div>
   <h3 class="anim-2 mb-16">By the numbers</h3>
@@ -740,11 +740,11 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
   <div class="two-col anim-3">
     <div>
       <ul class="bullets">
-        <li><strong>3 billion parameters</strong> — small enough to run on a laptop GPU</li>
-        <li><strong>Local via Ollama</strong> — no cloud API costs, no rate limits</li>
-        <li><strong>Data stays private</strong> — financial data never leaves the device</li>
-        <li><strong>Fast inference</strong> — ~2-5s response time locally</li>
-        <li><strong>Rule-based fallback</strong> — works even without the model running</li>
+        <li><strong>3 billion parameters</strong>: small enough to run on a laptop GPU</li>
+        <li><strong>Local via Ollama</strong>: no cloud API costs, no rate limits</li>
+        <li><strong>Data stays private</strong>: financial data never leaves the device</li>
+        <li><strong>Fast inference</strong>: ~2-5s response time locally</li>
+        <li><strong>Rule-based fallback</strong>: works even without the model running</li>
       </ul>
     </div>
     <div>
@@ -762,7 +762,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE 19: KNOWLEDGE GRAPH DETAIL ============ -->
-<div class="slide bg-white left-align" data-notes="Show what the graph actually stores. 14 node types, relationships between them. Entirely in-memory — no database, instant traversal. Grows organically with every transaction.">
+<div class="slide bg-white left-align" data-notes="Show what the graph actually stores. 14 node types, relationships between them. Entirely in-memory, no database. Instant traversal. Grows organically with every transaction.">
   <div class="bg-dots"></div>
   <div class="label anim-1">Inside the Brain</div>
   <h3 class="anim-2 mb-24">Knowledge Graph <span class="highlight">in Detail</span></h3>
@@ -789,18 +789,18 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
     <div>
       <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">How It Works</div>
       <ul class="bullets" style="margin-top:0">
-        <li><strong>100% in-memory</strong> — no database, zero latency traversal</li>
-        <li><strong>Nodes + Edges</strong> — entities connected by typed, weighted relationships</li>
-        <li><strong>Grows organically</strong> — every transaction adds merchants, categories, patterns</li>
-        <li><strong>Real-time context</strong> — builds prompt context for AI from graph traversal</li>
-        <li><strong>Self-discovering</strong> — auto-detects patterns, subscriptions, anomalies</li>
+        <li><strong>100% in-memory</strong>. No database, zero latency traversal</li>
+        <li><strong>Nodes + Edges</strong>: entities connected by typed, weighted relationships</li>
+        <li><strong>Grows organically</strong>: every transaction adds merchants, categories, patterns</li>
+        <li><strong>Real-time context</strong>: builds prompt context for AI from graph traversal</li>
+        <li><strong>Self-discovering</strong>: auto-detects patterns, subscriptions, anomalies</li>
       </ul>
     </div>
   </div>
 </div>
 
 <!-- ============ SLIDE 20: TECH STACK ============ -->
-<div class="slide bg-white left-align" data-notes="Quick tech overview. Don't over-explain — just show the stack.">
+<div class="slide bg-white left-align" data-notes="Quick tech overview. Don't over-explain, just show the stack.">
   <div class="bg-dots"></div>
   <div class="label anim-1">Under the hood</div>
   <h3 class="anim-2 mb-24">Tech Stack</h3>
@@ -817,17 +817,17 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
 </div>
 
 <!-- ============ SLIDE: INVESTEC API FEEDBACK ============ -->
-<div class="slide bg-navy left-align" data-notes="Direct feedback to the Investec API team. Start with thanks — OAuth2 works well, sandbox is easy. Then the wishlist: webhooks, transfer API, beneficiary CRUD, richer sandbox data. Frame as a wishlist, not complaints.">
+<div class="slide bg-navy left-align" data-notes="Direct feedback to the Investec API team. Start with thanks, OAuth2 works well, sandbox is easy. Then the wishlist: webhooks, transfer API, beneficiary CRUD, richer sandbox data. Frame as a wishlist, not complaints.">
   <div class="label anim-1" style="color:var(--teal-bright)">A note to the API team</div>
   <h3 class="anim-2 mb-16" style="color:var(--white)">Building on <span class="highlight">Investec Open API</span></h3>
   <div class="anim-3 mb-24" style="padding:16px 24px;border:1px solid rgba(0,168,150,0.3);border-radius:10px;background:rgba(0,168,150,0.08)">
-    <p style="font-size:20px;color:var(--teal-bright);font-weight:600">Thank you — the OAuth2 flow is solid, the sandbox is easy to start with, and real endpoints made this project possible.</p>
+    <p style="font-size:20px;color:var(--teal-bright);font-weight:600">Thank you. The OAuth2 flow is solid, the sandbox is easy to start with, and real endpoints made this project possible.</p>
   </div>
   <div style="font-size:16px;color:rgba(255,255,255,0.5);font-weight:700;margin-bottom:14px" class="anim-4">WHAT WOULD'VE MADE IT EASIER</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%" class="anim-4">
     <div class="card">
       <div class="card-title" style="color:var(--teal-bright)">Real-time Transaction Events</div>
-      <div class="card-desc">Webhooks or event push. The sandbox is pull-only — I built an entire simulator just to get transaction streams. Push events would let agents react to <em>real</em> bank activity.</div>
+      <div class="card-desc">Webhooks or event push. The sandbox is pull-only. I built an entire simulator just to get transaction streams. Push events would let agents react to <em>real</em> bank activity.</div>
     </div>
     <div class="card">
       <div class="card-title" style="color:var(--teal-bright)">Transfer & Payment API</div>
@@ -842,7 +842,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
       <div class="card-desc">Demo transactions are always the same. Rotating or randomized data would make testing feel much more realistic for developers.</div>
     </div>
   </div>
-  <p class="anim-5 mt-24" style="font-size:16px;color:rgba(255,255,255,0.4);text-align:center">Not complaints — a wishlist from someone who wants to keep building on this platform.</p>
+  <p class="anim-5 mt-24" style="font-size:16px;color:rgba(255,255,255,0.4);text-align:center">Not complaints. A wishlist from someone who wants to keep building on this platform.</p>
 </div>
 
 <!-- ============ SLIDE: CLOSING ============ -->
@@ -853,12 +853,12 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
     <p style="font-size:22px;color:rgba(255,255,255,0.7);line-height:1.7">A personal knowledge graph that grows with you.<br>An AI agent that protects, advises, and acts.</p>
   </div>
   <div class="anim-4 mt-48" style="padding:24px 48px;border:2px solid var(--teal-bright);border-radius:14px;background:rgba(0,168,150,0.1)">
-    <p style="font-size:28px;font-weight:800;color:var(--teal-bright)">Not a dashboard — a brain.</p>
+    <p style="font-size:28px;font-weight:800;color:var(--teal-bright)">Not a dashboard. A brain.</p>
   </div>
 </div>
 
 <!-- ============ SLIDE: GET INVOLVED & QUESTIONS ============ -->
-<div class="slide bg-white" data-notes="Thank them. Point to QR codes. Mention contributing — issues, PRs, forks. Share LinkedIn. Open for questions.">
+<div class="slide bg-white" data-notes="Thank them. Point to QR codes. Mention contributing, issues, PRs, forks. Share LinkedIn. Open for questions.">
   <div class="bg-dots"></div>
   <div class="label anim-1" style="letter-spacing:5px">Thank You</div>
   <h1 class="anim-2 mt-16" style="font-size:64px"><span class="highlight">Questions?</span></h1>
@@ -880,7 +880,7 @@ p{font-size:24px;line-height:1.6;color:var(--text-mid)}
       </div>
     </div>
   </div>
-  <p class="anim-4 small mt-24" style="color:var(--text-light)">SentiVest — AI Private Banking Agent &middot; Built with FastAPI + Knowledge Graph + Qwen 2.5-3B</p>
+  <p class="anim-4 small mt-24" style="color:var(--text-light)">SentiVest: AI Private Banking Agent &middot; Built with FastAPI + Knowledge Graph + Qwen 2.5-3B</p>
 </div>
 
 </div><!-- /deck -->
