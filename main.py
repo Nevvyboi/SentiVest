@@ -359,7 +359,7 @@ async def download_document(doc_id: int):
         if merchant_nodes:
             txn_data = [["Merchant", "Category", "Total Amount", "Txn Count", "Status"]]
             for nid, n in sorted(merchant_nodes, key=lambda x: x[1].attrs.get("total_amount", 0), reverse=True):
-                cat = "—"
+                cat = "-"
                 for e in kg.edges:
                     if e.source == nid and e.target in kg.nodes and kg.nodes[e.target].type == "category":
                         cat = kg.nodes[e.target].label
@@ -642,7 +642,7 @@ async def transcribe_audio(audio: UploadFile = File(...)):
     try:
         # If already WAV, use directly; otherwise convert via pydub/ffmpeg
         if ext == 'wav' and audio_data[:4] == b'RIFF':
-            # Browser sent raw WAV — may need resampling to 16kHz for STT
+            # Browser sent raw WAV - may need resampling to 16kHz for STT
             from pydub import AudioSegment
             import io
             audio_seg = AudioSegment.from_file(io.BytesIO(audio_data), format="wav")
@@ -684,7 +684,7 @@ async def transcribe_audio(audio: UploadFile = File(...)):
         return {"text": text, "success": True}
     except sr.UnknownValueError:
         print(f"[Transcribe] No speech detected")
-        return {"text": "", "success": False, "error": "No speech detected — try speaking louder or longer"}
+        return {"text": "", "success": False, "error": "No speech detected - try speaking louder or longer"}
     except sr.RequestError as e:
         print(f"[Transcribe] STT service error: {e}")
         return {"text": "", "success": False, "error": f"STT service error: {str(e)}"}
@@ -774,7 +774,7 @@ DEMO_STEPS = {
         {"id": "daily_spending", "title": "Daily Spending", "icon": "🛒",
          "description": "Groceries, fuel, coffee, transport", "repeatable": True},
         {"id": "food_delivery", "title": "Food Delivery", "icon": "🍔",
-         "description": "Uber Eats, Mr D — habit grows", "repeatable": True},
+         "description": "Uber Eats, Mr D - habit grows", "repeatable": True},
     ],
     "life_events": [
         {"id": "suspicious", "title": "Suspicious Transaction", "icon": "🚨",
@@ -883,7 +883,7 @@ async def demo_reset():
     kg.reset()
     if hasattr(kg, '_salary_current'):
         del kg._salary_current
-    await log_event("system", "Knowledge graph reset — starting fresh (Month 0)")
+    await log_event("system", "Knowledge graph reset - starting fresh (Month 0)")
     return {"status": "reset", "stats": kg.get_stats(), "demo_info": kg.get_demo_info()}
 
 
@@ -928,7 +928,7 @@ async def demo_step(body: dict = Body(...)):
             await log_event("process", "AI pattern detected: Recurring salary income")
 
         return {"step": step_id, "press": press + 1,
-                "message": f"Month {press + 1} income — R{salary_amount + freelance + interest:,.2f}",
+                "message": f"Month {press + 1} income - R{salary_amount + freelance + interest:,.2f}",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
                     "toast": {"icon": "💰", "text": f"Month {press + 1}: Salary R{salary_amount:,.0f}" +
@@ -980,7 +980,7 @@ async def demo_step(body: dict = Body(...)):
             await log_event("info", f"Subscription detection: {len(debits)} consistent charges")
 
         return {"step": step_id, "press": press + 1,
-                "message": f"Month {press + 1}: {len(debits)} debits — R{total:,.0f}",
+                "message": f"Month {press + 1}: {len(debits)} debits - R{total:,.0f}",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
                     "toast": {"icon": "🏦", "text": f"Debit orders: R{total:,.0f} (month {press + 1})", "type": "info"},
@@ -1001,13 +1001,13 @@ async def demo_step(body: dict = Body(...)):
         # balance already updated by ingest_transaction
         kg.nodes["user"].attrs["balance"] = kg.balance
 
-        await log_event("safe", f"Month {press + 1}: {len(txns)} transactions — R{total:,.2f}")
+        await log_event("safe", f"Month {press + 1}: {len(txns)} transactions - R{total:,.2f}")
 
         return {"step": step_id, "press": press + 1,
                 "message": f"Month {press + 1}: R{total:,.2f} across {len(txns)} merchants",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
-                    "toast": {"icon": "🛒", "text": f"{len(txns)} transactions — R{total:,.0f} (month {press + 1})", "type": "info"},
+                    "toast": {"icon": "🛒", "text": f"{len(txns)} transactions - R{total:,.0f} (month {press + 1})", "type": "info"},
                     "txns": [{"merchant": m, "amount": a, "category": c, "time": t,
                              "icon": icon, "verdict": "SAFE"} for m, a, c, t, icon in txns],
                     "balance": 0  # balance updates come via WebSocket from KG
@@ -1025,15 +1025,15 @@ async def demo_step(body: dict = Body(...)):
         # balance already updated by ingest_transaction
         kg.nodes["user"].attrs["balance"] = kg.balance
 
-        await log_event("warning", f"Month {press + 1}: {len(txns)} food orders — R{total:,.2f}")
+        await log_event("warning", f"Month {press + 1}: {len(txns)} food orders - R{total:,.2f}")
         if press >= 2:
             await log_event("process", f"Escalation: food orders increasing ({4 + press - 1} → {len(txns)})")
 
         return {"step": step_id, "press": press + 1,
-                "message": f"Month {press + 1}: {len(txns)} food orders — R{total:,.2f}",
+                "message": f"Month {press + 1}: {len(txns)} food orders - R{total:,.2f}",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
-                    "toast": {"icon": "🍔", "text": f"{len(txns)} orders — R{total:,.0f} (escalating!)", "type": "warning"},
+                    "toast": {"icon": "🍔", "text": f"{len(txns)} orders - R{total:,.0f} (escalating!)", "type": "warning"},
                     "txns": [{"merchant": m, "amount": a, "category": c, "time": t,
                              "icon": icon, "verdict": "SAFE"} for m, a, c, t, icon in txns],
                     "balance": 0
@@ -1051,12 +1051,12 @@ async def demo_step(body: dict = Body(...)):
         })
         kg._add_edge("user", alert_id, "ALERTED_BY")
         kg._notify_change()
-        await log_event("critical", "BLOCKED: UNKNOWN_MERCH_ZW R4,500 at 02:47 — card frozen")
-        await log_event("warning", "Anomaly score: 0.85 — unknown merchant + late night + foreign")
-        return {"step": step_id, "message": "Suspicious transaction blocked — card frozen",
+        await log_event("critical", "BLOCKED: UNKNOWN_MERCH_ZW R4,500 at 02:47 - card frozen")
+        await log_event("warning", "Anomaly score: 0.85 - unknown merchant + late night + foreign")
+        return {"step": step_id, "message": "Suspicious transaction blocked - card frozen",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
-                    "toast": {"icon": "🚨", "text": "BLOCKED: Unknown merchant R4,500 — card frozen!", "type": "critical", "duration": 5000},
+                    "toast": {"icon": "🚨", "text": "BLOCKED: Unknown merchant R4,500 - card frozen!", "type": "critical", "duration": 5000},
                     "txns": [{"merchant": "UNKNOWN_MERCH_ZW", "amount": 4500, "category": "Unknown",
                              "time": "02:47", "icon": "🚨", "verdict": "BLOCK"}],
                     "balance": 0, "cardFrozen": True, "page": "alerts"
@@ -1072,7 +1072,7 @@ async def demo_step(body: dict = Body(...)):
         kg._notify_change()
         await log_event("safe", f"13th cheque received: R{bonus_amount:,.2f}")
         await log_event("warning", "Post-bonus spending spike detected: R5,600 in first 24hrs")
-        return {"step": step_id, "message": f"Bonus R{bonus_amount:,.2f} — spending spike detected",
+        return {"step": step_id, "message": f"Bonus R{bonus_amount:,.2f} - spending spike detected",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
                     "toast": {"icon": "🎉", "text": f"13th cheque: R{bonus_amount:,.0f}!", "type": "safe", "duration": 4000},
@@ -1106,7 +1106,7 @@ async def demo_step(body: dict = Body(...)):
         })
         kg._add_edge("user", alert_id, "ALERTED_BY")
         kg._notify_change()
-        await log_event("critical", f"Emergency: {desc} — R{amount:,.0f}")
+        await log_event("critical", f"Emergency: {desc} - R{amount:,.0f}")
         await log_event("warning", f"Balance impact: -R{amount:,.0f}")
         return {"step": step_id, "message": f"{desc}: R{amount:,.0f}",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
@@ -1149,7 +1149,7 @@ async def demo_step(body: dict = Body(...)):
         kg._notify_change()
         increase = new_salary - old_salary
         await log_event("safe", f"Promotion! Salary R{old_salary:,.0f} → R{new_salary:,.0f}")
-        await log_event("info", f"Extra R{increase:,.0f}/month — AI recommends: R8K savings, R4.5K lifestyle")
+        await log_event("info", f"Extra R{increase:,.0f}/month - AI recommends: R8K savings, R4.5K lifestyle")
         return {"step": step_id, "message": f"Salary increased to R{new_salary:,.0f} (+R{increase:,.0f})",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
@@ -1176,9 +1176,9 @@ async def demo_step(body: dict = Body(...)):
         # balance already updated by ingest_transaction
         kg.nodes["user"].attrs["balance"] = kg.balance
         kg._notify_change()
-        await log_event("info", f"International trip: {len(forex_txns)} forex transactions — R{total:,.0f}")
-        await log_event("warning", "Multiple currencies detected: EUR, GBP — anomaly alerts may fire")
-        return {"step": step_id, "message": f"Trip: {len(forex_txns)} transactions in EUR/GBP — R{total:,.0f}",
+        await log_event("info", f"International trip: {len(forex_txns)} forex transactions - R{total:,.0f}")
+        await log_event("warning", "Multiple currencies detected: EUR, GBP - anomaly alerts may fire")
+        return {"step": step_id, "message": f"Trip: {len(forex_txns)} transactions in EUR/GBP - R{total:,.0f}",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
                     "toast": {"icon": "✈️", "text": f"Trip spending: R{total:,.0f} across EUR/GBP", "type": "info"},
@@ -1204,7 +1204,7 @@ async def demo_step(body: dict = Body(...)):
         kg.nodes["user"].attrs["balance"] = kg.balance
         kg._notify_change()
         await log_event("critical", f"Car accident: Excess R{excess:,.0f} paid, claim R{repair_estimate:,.0f}")
-        await log_event("info", "Outsurance claim filed — 5-7 business days for assessment")
+        await log_event("info", "Outsurance claim filed - 5-7 business days for assessment")
         return {"step": step_id, "message": f"Accident: R{excess:,.0f} excess, R{repair_estimate:,.0f} claim",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
@@ -1226,10 +1226,10 @@ async def demo_step(body: dict = Body(...)):
         for b in kg.get_budgets():
             if b["status"] == "OVER":
                 alerts.append(f"{b['category']} R{b['spent']:,.0f}/R{b['limit']:,.0f}")
-        await log_event("action", "5 budgets created — spending limits active")
+        await log_event("action", "5 budgets created - spending limits active")
         if alerts:
             await log_event("warning", f"Already over budget: {', '.join(alerts)}")
-        return {"step": step_id, "message": f"5 budgets set — {len(alerts)} exceeded",
+        return {"step": step_id, "message": f"5 budgets set - {len(alerts)} exceeded",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
                     "toast": {"icon": "📊", "text": "5 budgets created", "type": "safe"},
@@ -1261,7 +1261,7 @@ async def demo_step(body: dict = Body(...)):
         return {"step": step_id, "message": "Goals set with AI timeline predictions",
                 "stats": kg.get_stats(), "demo_info": kg.get_demo_info(),
                 "phone_data": {
-                    "toast": {"icon": "🎯", "text": "Goals set — Emergency Fund 17mo, Holiday 10mo", "type": "info"},
+                    "toast": {"icon": "🎯", "text": "Goals set - Emergency Fund 17mo, Holiday 10mo", "type": "info"},
                     "txns": [{"merchant": "Takealot.com", "amount": 12399, "category": "Shopping",
                              "time": "14:22", "icon": "🛍️", "verdict": "FLAG"}],
                     "balance": -12399
@@ -1273,7 +1273,7 @@ async def demo_step(body: dict = Body(...)):
 # ==================== Simulator ====================
 
 async def _simulator_event(event_type: str, data: dict):
-    """Handle events from the life simulator — broadcast to all WS clients."""
+    """Handle events from the life simulator - broadcast to all WS clients."""
     if event_type == "transaction":
         toast = data.get("toast")
         if toast:
@@ -1420,17 +1420,17 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
 
-    # HTTP on localhost — getUserMedia works (localhost is a secure context)
+    # HTTP on localhost - getUserMedia works (localhost is a secure context)
     # HTTPS with self-signed certs can cause Brave/Chrome to silently mute mic streams
     use_https = "--https" in sys.argv
     cert_file = os.path.join(os.path.dirname(__file__), "cert.pem")
     key_file = os.path.join(os.path.dirname(__file__), "key.pem")
 
     if use_https and os.path.exists(cert_file) and os.path.exists(key_file):
-        print(f"\n  HTTPS enabled — open https://localhost:{port}\n")
+        print(f"\n  HTTPS enabled - open https://localhost:{port}\n")
         uvicorn.run("main:app", host=host, port=port, reload=True,
                      ssl_certfile=cert_file, ssl_keyfile=key_file)
     else:
-        print(f"\n  HTTP mode — open http://localhost:{port}")
-        print(f"  (Mic works on localhost — it's a secure context)\n")
+        print(f"\n  HTTP mode - open http://localhost:{port}")
+        print(f"  (Mic works on localhost - it's a secure context)\n")
         uvicorn.run("main:app", host=host, port=port, reload=True)

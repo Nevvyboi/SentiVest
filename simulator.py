@@ -267,7 +267,7 @@ def calculate_health_score() -> dict:
         scores["dti"] = 10
     else:
         scores["dti"] = 5
-    dti_detail = f"DTI {dti:.0f}% — {'healthy' if dti < 35 else 'stretched' if dti < 50 else 'high risk'}"
+    dti_detail = f"DTI {dti:.0f}% - {'healthy' if dti < 35 else 'stretched' if dti < 50 else 'high risk'}"
 
     # 2. Savings buffer (20 points)
     monthly_expenses = kg.total_spent / max(kg.demo_month + 1, 1) if kg.transactions_processed > 0 else 30000
@@ -400,10 +400,10 @@ def assess_loan_eligibility(requested_amount: float, term_months: int = 60,
         eligible = False
         risk = "high"
     elif new_dti > 60:
-        factors.append({"factor": "Elevated DTI", "impact": "caution", "detail": f"{new_dti:.0f}% — manageable but stretched"})
+        factors.append({"factor": "Elevated DTI", "impact": "caution", "detail": f"{new_dti:.0f}% - manageable but stretched"})
         risk = "medium"
     elif new_dti > 45:
-        factors.append({"factor": "Moderate DTI", "impact": "caution", "detail": f"{new_dti:.0f}% — within acceptable range"})
+        factors.append({"factor": "Moderate DTI", "impact": "caution", "detail": f"{new_dti:.0f}% - within acceptable range"})
         risk = "low"
     else:
         factors.append({"factor": "Healthy DTI", "impact": "positive", "detail": f"{new_dti:.0f}%"})
@@ -421,7 +421,7 @@ def assess_loan_eligibility(requested_amount: float, term_months: int = 60,
                         "detail": f"{salary_months} months salary history"})
     elif salary_months >= 3:
         factors.append({"factor": "Short employment history", "impact": "caution",
-                        "detail": f"{salary_months} months — 6+ preferred"})
+                        "detail": f"{salary_months} months - 6+ preferred"})
     else:
         factors.append({"factor": "Insufficient history", "impact": "negative",
                         "detail": f"Only {salary_months} months tracked"})
@@ -431,7 +431,7 @@ def assess_loan_eligibility(requested_amount: float, term_months: int = 60,
     total_debt = sum(l.attrs.get("balance", 0) for l in existing_loans)
     if total_debt > total_income * 24:
         factors.append({"factor": "High existing debt", "impact": "negative",
-                        "detail": f"R{total_debt:,.0f} — {total_debt / total_income:.0f}x monthly income"})
+                        "detail": f"R{total_debt:,.0f} - {total_debt / total_income:.0f}x monthly income"})
         risk = "high"
 
     # Insurance (positive factor)
@@ -592,7 +592,7 @@ class LifeSimulator:
         await asyncio.sleep(seconds / self.speed)
 
     async def _run_loop(self):
-        """Main simulation loop — each iteration is one month."""
+        """Main simulation loop - each iteration is one month."""
         try:
             while self.running:
                 await self._simulate_month()
@@ -702,7 +702,7 @@ class LifeSimulator:
                 })
                 await self._delay(0.5)
 
-            # Evening (food delivery — increasing frequency)
+            # Evening (food delivery - increasing frequency)
             food_chance = 0.3 + (month * 0.05)  # gets more frequent over time
             if random.random() < food_chance:
                 pool = DAILY_POOLS["evening"]

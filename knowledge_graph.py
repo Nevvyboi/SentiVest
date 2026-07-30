@@ -1031,7 +1031,7 @@ class FinancialKnowledgeGraph:
                     "type": "recurring_income", "source": source,
                     "months_detected": count, "average_amount": round(avg, 2),
                     "consistency": consistency, "amounts": amounts[-6:],
-                    "insight": f"{source} R{avg:,.0f}/mo detected {count} months — {stability}"
+                    "insight": f"{source} R{avg:,.0f}/mo detected {count} months - {stability}"
                 })
                 iid = f"income_{source.lower().replace(' ', '_')}"
                 if iid in self.nodes:
@@ -1683,7 +1683,7 @@ class FinancialKnowledgeGraph:
     # ==================== ANALYSIS METHODS ====================
 
     def get_spending_trend(self, category: str = None) -> dict:
-        """Analyze monthly spending trend — increasing/decreasing/stable."""
+        """Analyze monthly spending trend - increasing/decreasing/stable."""
         if len(self.monthly_history) < 2:
             # Fall back to current-month data
             total = sum(n.attrs.get("total_spent", 0) for n in self.nodes.values() if n.type == "category")
@@ -1808,21 +1808,21 @@ class FinancialKnowledgeGraph:
         loans = [n for n in self.nodes.values() if n.type == "loan"]
         if loans:
             total_debt = sum(l.attrs.get("balance", 0) for l in loans)
-            lines.append(f"LOANS: R{total_debt:,.0f} total — " + ", ".join(
+            lines.append(f"LOANS: R{total_debt:,.0f} total - " + ", ".join(
                 f"{l.label} R{l.attrs.get('balance', 0):,.0f} at {l.attrs.get('rate', 0)}%" for l in loans))
 
         # Investments
         investments = [n for n in self.nodes.values() if n.type == "investment"]
         if investments:
             total_val = sum(i.attrs.get("current_value", 0) for i in investments)
-            lines.append(f"INVESTMENTS: R{total_val:,.0f} total — " + ", ".join(
+            lines.append(f"INVESTMENTS: R{total_val:,.0f} total - " + ", ".join(
                 f"{i.label} R{i.attrs.get('current_value', 0):,.0f} ({'+' if i.attrs.get('pnl_pct', 0) >= 0 else ''}{i.attrs.get('pnl_pct', 0):.1f}%)" for i in investments))
 
         # Insurance
         policies = [n for n in self.nodes.values() if n.type == "insurance"]
         if policies:
             total_prem = sum(p.attrs.get("premium", 0) for p in policies)
-            lines.append(f"INSURANCE: R{total_prem:,.0f}/mo — " + ", ".join(
+            lines.append(f"INSURANCE: R{total_prem:,.0f}/mo - " + ", ".join(
                 f"{p.label} R{p.attrs.get('premium', 0):,.0f}/mo" for p in policies))
 
         # Tax
@@ -1853,7 +1853,7 @@ class FinancialKnowledgeGraph:
     # ==================== SEED DEMO DATA ====================
 
     def seed_demo_data(self) -> dict:
-        """Seed comprehensive demo data — transactions, income, loans, investments, insurance, tax."""
+        """Seed comprehensive demo data - transactions, income, loans, investments, insurance, tax."""
         # Reset
         self.nodes = {}
         self.edges = []

@@ -6,6 +6,24 @@ SentiVest is an autonomous AI banking agent built for the South African market. 
 
 > 💡 Banks give you data. SentiVest gives you understanding.
 
+<p align="center"><img src="docs/screenshots/01-command-center.png" alt="SentiVest command center: health score, loan eligibility and AI insights" width="100%" /></p>
+
+---
+
+## 🎬 A Look Around
+
+**🧬 The knowledge graph and life simulator.** Ninety one nodes and ninety four edges linking accounts,
+merchants, loans, budgets, insurance and anomalies around a central **You**. The simulator on the left
+compresses months into seconds, firing salary, debit orders, fraud attempts and life events straight
+into the graph over a WebSocket.
+
+<p align="center"><img src="docs/screenshots/02-knowledge-graph.png" alt="Knowledge graph with 91 nodes and the life simulator" width="100%" /></p>
+
+**📝 The audit log.** Every decision the agent takes is written out as it happens, so nothing the
+classifier or the graph does is hidden behind a spinner.
+
+<p align="center"><img src="docs/screenshots/03-audit-log.png" alt="Live audit log" width="100%" /></p>
+
 ---
 
 ## ⚡ What Makes This Different
@@ -40,16 +58,16 @@ SentiVest is an autonomous AI banking agent built for the South African market. 
 ## ✨ Features
 
 ### 🤖 Core Agent Capabilities
-- 🛡️ **Transaction Classification** — Real-time fraud detection with weighted scoring across 100+ known merchants and 6 fraud indicators
-- 🕸️ **Knowledge Graph** — Personal financial graph connecting accounts, merchants, categories, loans, investments, insurance, tax, budgets, goals, and patterns
-- 🎙️ **Voice Intelligence** — 35+ voice command handlers with persistent memory, multi-turn payment flows, and natural banker-like conversation
-- 💡 **Proactive Insights** — Budget warnings, spending habit detection, savings rate analysis, and low balance alerts without being asked
+- 🛡️ **Transaction Classification** - Real-time fraud detection with weighted scoring across 100+ known merchants and 6 fraud indicators
+- 🕸️ **Knowledge Graph** - Personal financial graph connecting accounts, merchants, categories, loans, investments, insurance, tax, budgets, goals, and patterns
+- 🎙️ **Voice Intelligence** - 35+ voice command handlers with persistent memory, multi-turn payment flows, and natural banker-like conversation
+- 💡 **Proactive Insights** - Budget warnings, spending habit detection, savings rate analysis, and low balance alerts without being asked
 
 ### 💰 Financial Tools
-- 💚 **Financial Health Score** — 0-100 score (A-F grade) analyzing DTI, savings buffer, budget adherence, insurance coverage, investment diversity, and spending habits
-- 🏦 **Loan Eligibility** — DTI-based assessment with verdict (Approved/Conditional/Declined), factor analysis, and max affordable calculation
-- 🔄 **Smart Transfer** — Inter-account transfers with full audit trail in the knowledge graph
-- 💳 **Beneficiary Payments** — Fuzzy beneficiary matching, disambiguation, multi-step confirmation flow
+- 💚 **Financial Health Score** - 0-100 score (A-F grade) analyzing DTI, savings buffer, budget adherence, insurance coverage, investment diversity, and spending habits
+- 🏦 **Loan Eligibility** - DTI-based assessment with verdict (Approved/Conditional/Declined), factor analysis, and max affordable calculation
+- 🔄 **Smart Transfer** - Inter-account transfers with full audit trail in the knowledge graph
+- 💳 **Beneficiary Payments** - Fuzzy beneficiary matching, disambiguation, multi-step confirmation flow
 
 ### 🎮 Life Simulator
 - ⏩ Compressed real-life financial simulation (months in seconds, 0.25x-5x speed)
@@ -58,10 +76,10 @@ SentiVest is an autonomous AI banking agent built for the South African market. 
 - 📡 Real-time WebSocket event streaming with graph visualization
 
 ### 📱 UI
-- 📱 **Phone Mockup** — iPhone-style card carousel, 12 pages (Home, Ledger, Chat, Budgets, Alerts, Documents, Scanner, Tasks, Report, Test, Profile)
-- 🎛️ **Command Center** — Health score ring gauge, loan eligibility panel, AI insights feed, smart transfer, spending breakdown
-- 🕸️ **Knowledge Graph Visualization** — D3.js interactive graph with demo step controls and simulator
-- 📋 **Audit Log** — Real-time event feed with color-coded severity
+- 📱 **Phone Mockup** - iPhone-style card carousel, 12 pages (Home, Ledger, Chat, Budgets, Alerts, Documents, Scanner, Tasks, Report, Test, Profile)
+- 🎛️ **Command Center** - Health score ring gauge, loan eligibility panel, AI insights feed, smart transfer, spending breakdown
+- 🕸️ **Knowledge Graph Visualization** - D3.js interactive graph with demo step controls and simulator
+- 📋 **Audit Log** - Real-time event feed with color-coded severity
 
 ---
 
@@ -84,7 +102,7 @@ SentiVest is an autonomous AI banking agent built for the South African market. 
 
 ### Prerequisites
 - 🐍 Python 3.10+
-- 🦙 [Ollama](https://ollama.ai) (optional — falls back to rule-based responses)
+- 🦙 [Ollama](https://ollama.ai) (optional - falls back to rule-based responses)
 
 ### Setup
 
@@ -142,7 +160,7 @@ SentiVest/
 ```
 
 📖 See individual READMEs for detailed documentation:
-- [`static/README.md`](static/README.md) — 📱 Frontend UI documentation
+- [`static/README.md`](static/README.md) - 📱 Frontend UI documentation
 
 ---
 

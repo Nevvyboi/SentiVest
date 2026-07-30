@@ -1,6 +1,6 @@
 """
 SentiVest Voice AI Agent
-Conversational AI with action capabilities — powered by knowledge graph data.
+Conversational AI with action capabilities - powered by knowledge graph data.
 Handlers gather real data, AI model generates natural responses.
 Persistent memory across server restarts.
 """
@@ -300,7 +300,7 @@ async def _ai_respond(user_text: str, intent: str, data_summary: str, template: 
         f"Intent detected: {intent}\n"
         f"Relevant financial data:\n{data_summary}\n\n"
         f"Respond like a friendly personal banker having a conversation. Be specific with numbers. "
-        f"1-3 sentences max — this is spoken aloud. Use contractions. Sound warm and human. "
+        f"1-3 sentences max - this is spoken aloud. Use contractions. Sound warm and human. "
         f"If you know the user's name from memory, use it naturally. Give brief advice when helpful."
     )
 
@@ -346,7 +346,7 @@ def _smart_fallback(text: str) -> str:
         loans = [n for n in kg.nodes.values() if n.type == "loan"]
         total_debt = sum(n.attrs.get("balance", 0) for n in loans)
         return (f"Hey {greeting}I hear you. Your total debt is R{total_debt:,.0f} across {len(loans)} loans. "
-                f"Your balance is R{bal:,.2f}. Let's look at this together — ask me about your health score for a full picture.")
+                f"Your balance is R{bal:,.2f}. Let's look at this together - ask me about your health score for a full picture.")
 
     if any(w in tl for w in ["advice", "suggest", "recommend", "should i", "what do you think"]):
         return (f"Hey {greeting}based on your profile, I'd say focus on building that emergency fund. "
@@ -409,7 +409,7 @@ async def route(text: str) -> dict:
         if handler:
             handler_result = await handler(text_lower)
         else:
-            # Free-form question — use slim context for faster AI response
+            # Free-form question - use slim context for faster AI response
             memory_context = _build_memory_context()
             acct = kg.accounts.get(kg.active_account_id, {})
             slim = (f"Balance: R{acct.get('balance',0):,.2f}, Available: R{acct.get('available',0):,.2f}. "
@@ -421,7 +421,7 @@ async def route(text: str) -> dict:
                     model.generate_voice_response(text, full_context), timeout=15
                 )
             except (asyncio.TimeoutError, Exception):
-                # Smart fallback — give data-driven answer from KG
+                # Smart fallback - give data-driven answer from KG
                 response = _smart_fallback(text)
             handler_result = {
                 "command": intent,
@@ -432,7 +432,7 @@ async def route(text: str) -> dict:
                 "action": None,
             }
 
-    # Generate AI-enhanced response for query handlers (skip for actions — they have good templates)
+    # Generate AI-enhanced response for query handlers (skip for actions - they have good templates)
     if handler_result.get("data_summary") and not handler_result.get("action"):
         ai_response = await _ai_respond(
             text, handler_result["intent"],
@@ -718,7 +718,7 @@ async def _handle_prediction(text: str) -> dict:
 
 async def _handle_add_task(text: str) -> dict:
     """Create a task/reminder from voice command."""
-    # Extract task description — remove trigger phrases
+    # Extract task description - remove trigger phrases
     task_text = text
     for phrase in ["remind me to", "remind me", "add task", "create task", "new task",
                    "create reminder", "set reminder", "add reminder"]:
@@ -1277,7 +1277,7 @@ async def _handle_stop_sim(text: str) -> dict:
 # ==================== PAYMENT FLOW (multi-turn) ====================
 
 async def _handle_pay(text: str) -> dict:
-    """Start payment flow — find beneficiary, get amount, confirm."""
+    """Start payment flow - find beneficiary, get amount, confirm."""
     # Extract beneficiary name from text
     name_patterns = [
         r'pay\s+(?:r\s?\d[\d,.]*\s+to\s+)?(.+?)(?:\s+r\s?\d|\s*$)',
@@ -1311,7 +1311,7 @@ async def _handle_pay(text: str) -> dict:
                 break
 
     if not ben_name:
-        # No name detected — ask
+        # No name detected - ask
         _set_flow("payment", "awaiting_name", {"amount": amount})
         return {
             "command": "pay", "recognized": text, "intent": "pay",
@@ -1346,7 +1346,7 @@ async def _handle_pay(text: str) -> dict:
                 "response": f"How much would you like to pay {ben['name']}?",
                 "ui": {"type": "payment_flow", "step": "ask_amount", "beneficiary": ben},
             }
-        # Have both name and amount — show confirmation
+        # Have both name and amount - show confirmation
         _set_flow("payment", "awaiting_confirm", {"beneficiary": ben, "amount": amount})
         acct = kg.accounts.get(kg.active_account_id, {})
         return {
@@ -1359,7 +1359,7 @@ async def _handle_pay(text: str) -> dict:
                    "balance": acct.get("balance", 0)},
         }
 
-    # Multiple matches — disambiguate
+    # Multiple matches - disambiguate
     _set_flow("payment", "disambiguate", {"matches": matches[:4], "amount": amount})
     names = " or ".join(f"\"{m['name']}\"" for m in matches[:4])
     return {
@@ -1390,7 +1390,7 @@ async def _handle_flow_continue(text: str) -> dict:
     if flow == "payment":
         return await _continue_payment_flow(text, text_lower, step, data)
 
-    # Unknown flow state — reset
+    # Unknown flow state - reset
     _reset_flow()
     return None
 

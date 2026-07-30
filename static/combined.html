@@ -175,7 +175,7 @@ body{font-family:'Libre Franklin',sans-serif;background:#1A2332;display:flex;jus
 .page.active{display:block}
 @keyframes slideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
 
-/* Home — Card Carousel */
+/* Home - Card Carousel */
 .card-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:12px 16px;-ms-overflow-style:none;scrollbar-width:none}
 .card-carousel::-webkit-scrollbar{display:none}
 .bank-card{min-width:270px;height:164px;border-radius:16px;padding:18px;color:#fff;position:relative;overflow:hidden;scroll-snap-align:center;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;flex-shrink:0}
@@ -1709,7 +1709,7 @@ async function micStart() {
 
   // Audio analyser for waveform + silence detection
   _mic.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  // Chrome suspends AudioContext — must resume after user gesture
+  // Chrome suspends AudioContext - must resume after user gesture
   if (_mic.audioCtx.state === 'suspended') await _mic.audioCtx.resume();
   _mic.analyser = _mic.audioCtx.createAnalyser();
   _mic.analyser.fftSize = 256;
@@ -1721,7 +1721,7 @@ async function micStart() {
   const track = _mic.stream.getAudioTracks()[0];
   console.log('[Mic] Track:', track.label, 'enabled:', track.enabled, 'muted:', track.muted, 'readyState:', track.readyState);
 
-  // Use time-domain data (waveform) — more responsive than frequency
+  // Use time-domain data (waveform) - more responsive than frequency
   const bufLen = _mic.analyser.fftSize;
   const timeBuf = new Uint8Array(bufLen);
   const bars = wf.querySelectorAll('.vo-wave-bar');
@@ -1744,7 +1744,7 @@ async function micStart() {
     if (_animCount < 5 || _animCount % 60 === 0) console.log('[Mic] frame', _animCount, 'rms:', rms.toFixed(4), 'vol:', volume.toFixed(3));
     _animCount++;
 
-    // Animate bars — center bars taller, edges shorter, with randomness
+    // Animate bars - center bars taller, edges shorter, with randomness
     bars.forEach((bar, i) => {
       const center = Math.abs(i - barCount / 2) / (barCount / 2);
       const base = (1 - center * 0.6) * volume;
@@ -1776,7 +1776,7 @@ async function micStart() {
     document.getElementById('voRecTime').textContent = _mic.seconds + 's';
   }, 1000);
 
-  // Record raw PCM via ScriptProcessorNode — encode as WAV (bypasses webm/ffmpeg issues)
+  // Record raw PCM via ScriptProcessorNode - encode as WAV (bypasses webm/ffmpeg issues)
   _mic.pcmChunks = [];
   const bufSize = 4096;
   _mic.scriptNode = _mic.audioCtx.createScriptProcessor(bufSize, 1, 1);
@@ -1904,7 +1904,7 @@ async function micTranscribe() {
     }
   } catch(e) {
     indicator.remove();
-    voAddMessage('ai', 'Transcription failed — check internet connection.');
+    voAddMessage('ai', 'Transcription failed - check internet connection.');
   }
 }
 
@@ -1951,13 +1951,13 @@ if (ttsSupported) {
 function speakResponse(text) {
   if (!ttsSupported) return;
   window.speechSynthesis.cancel();
-  // Clean text for speech — remove R formatting, abbreviations
+  // Clean text for speech - remove R formatting, abbreviations
   let clean = text.replace(/R\s?(\d)/g, '$1 rand').replace(/DTI/g, 'D T I')
     .replace(/\bmo\b/g, 'months').replace(/\bpct\b/g, 'percent');
   const utter = new SpeechSynthesisUtterance(clean);
   if (ttsVoice) utter.voice = ttsVoice;
   utter.lang = ttsVoice?.lang || 'en-ZA';
-  utter.rate = 1.15;   // Slightly fast — sounds more natural
+  utter.rate = 1.15;   // Slightly fast - sounds more natural
   utter.pitch = 1.02;  // Tiny pitch lift for warmth
   utter.volume = 1.0;
   window.speechSynthesis.speak(utter);
@@ -1990,7 +1990,7 @@ async function processVoice(text) {
   } catch(e) {
     clearTimeout(timer);
     if (e.name === 'AbortError') {
-      response = 'Taking too long — the AI model may be loading. Try again in a moment.';
+      response = 'Taking too long - the AI model may be loading. Try again in a moment.';
       command = 'timeout';
     } else {
       response = 'Could not reach the server. Please check if it\'s running.';
@@ -2526,7 +2526,7 @@ async function loadProfile() {
     const res = await fetch(`${API}/api/voice/memory`);
     const data = await res.json();
 
-    // Name — find in facts
+    // Name - find in facts
     const nameFact = data.facts.find(f => f.toLowerCase().startsWith("user's name:") || f.toLowerCase().startsWith("my name is"));
     let name = '';
     if (nameFact) {
@@ -2616,7 +2616,7 @@ async function addProfileFact() {
 }
 
 async function clearAllMemory() {
-  if (!confirm('This will erase all memory — facts, preferences, conversation history. Are you sure?')) return;
+  if (!confirm('This will erase all memory - facts, preferences, conversation history. Are you sure?')) return;
   await fetch(`${API}/api/voice/clear`, {method:'POST'});
   phoneToast('&#128465;', 'All memory cleared', 'info');
   loadProfile();
@@ -2657,7 +2657,7 @@ function phoneUpdateBalance(amount) {
   loadAccounts();
 }
 
-// Server-driven demo — phone_data comes from API response, no client-side mapping needed
+// Server-driven demo - phone_data comes from API response, no client-side mapping needed
 
 async function runDemoStep(btn) {
   const step = btn.dataset.step;
@@ -2742,7 +2742,7 @@ async function resetDemo() {
     document.getElementById('gNodeCount').textContent = '1';
     document.getElementById('gEdgeCount').textContent = '0';
 
-    // Reset phone — fetch live balance from KG
+    // Reset phone - fetch live balance from KG
     document.getElementById('txnList').innerHTML = '';
     cardFrozen = false;
     loadAccounts();
@@ -2933,7 +2933,7 @@ async function tLiveClassify() {
     result.innerHTML = html;
   } catch(e) {
     clearTimeout(timer);
-    result.innerHTML = e.name === 'AbortError' ? 'Timed out — AI model may be loading. Try again.' : 'Error: Server offline';
+    result.innerHTML = e.name === 'AbortError' ? 'Timed out - AI model may be loading. Try again.' : 'Error: Server offline';
   }
 }
 
